@@ -52,7 +52,9 @@ export default function Kiosk() {
 
   const tx = {
     en: {
-      welcome: 'Welcome to', sub: 'Your Health. Revealed. Rewarded.',
+      welcome: 'Welcome to', sub: 'Your Health. Revealed. Rewarded. In 10 min.',
+      programme: 'Screening & Early Detection Programme',
+      promise: '"Prevention is not a department at Lakeshore. It is a promise."',
       startBtn: 'Start Health Check →',
       identifyTitle: 'Find your record',
       identifyPlaceholder: 'Enter UHID, ABHA or mobile number',
@@ -72,7 +74,9 @@ export default function Kiosk() {
       cancel: 'Cancel',
     },
     ml: {
-      welcome: 'സ്വാഗതം', sub: 'നിങ്ങളുടെ ആരോഗ്യം. വെളിപ്പെടുത്തി. പ്രതിഫലിച്ചു.',
+      welcome: 'സ്വാഗതം', sub: 'നിങ്ങളുടെ ആരോഗ്യം. 10 മിനിറ്റിൽ.',
+      programme: 'സ്ക്രീനിംഗ് & ആർലി ഡിറ്റക്ഷൻ പ്രോഗ്രാം',
+      promise: '"പ്രതിരോധം ലേക്ഷോറിൽ ഒരു വകുപ്പല്ല. അത് ഒരു വാഗ്ദാനമാണ്."',
       startBtn: 'ആരോഗ്യ പരിശോധന ആരംഭിക്കുക →',
       identifyTitle: 'നിങ്ങളുടെ രേഖ കണ്ടെത്തുക',
       identifyPlaceholder: 'UHID, ABHA അല്ലെങ്കിൽ മൊബൈൽ നൽകുക',
@@ -157,6 +161,12 @@ export default function Kiosk() {
 
   // ─── Welcome Screen ──────────────────────────────────────────────────────
   if (screen === 'welcome') {
+    const metrics = [
+      { icon: '❤️', label: lang === 'ml' ? 'രക്തസമ്മർദ്ദം' : 'Blood Pressure' },
+      { icon: '🫁', label: lang === 'ml' ? 'ഓക്സിജൻ' : 'SpO₂' },
+      { icon: '⚖️', label: lang === 'ml' ? 'ബിഎംഐ' : 'BMI' },
+      { icon: '🩸', label: lang === 'ml' ? 'ഗ്ലൂക്കോസ്' : 'Glucose' },
+    ]
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
@@ -165,14 +175,23 @@ export default function Kiosk() {
         padding: '2rem',
         userSelect: 'none',
       }}>
-        {/* Language toggle */}
-        <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem' }}>
+        <style>{`
+          @keyframes kiosk-pulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 0 rgba(255,255,255,0.45); }
+            50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 18px rgba(255,255,255,0); }
+          }
+        `}</style>
+
+        {/* Language toggle — prominent, top-centre */}
+        <div style={{ position: 'absolute', top: '1.25rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.5rem' }}>
           {['en', 'ml'].map(l => (
             <button key={l} onClick={() => setLang(l)} style={{
-              padding: '0.625rem 1rem', borderRadius: 8, minHeight: 44, minWidth: 48,
-              background: lang === l ? 'white' : 'rgba(255,255,255,0.2)',
+              padding: '0.625rem 1.25rem', borderRadius: 8, minHeight: 48, minWidth: 80,
+              background: lang === l ? 'white' : 'rgba(255,255,255,0.15)',
               color: lang === l ? '#1B75BC' : 'white',
-              border: 'none', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+              border: lang === l ? 'none' : '1.5px solid rgba(255,255,255,0.35)',
+              fontWeight: 700, fontSize: '1rem', cursor: 'pointer',
+              transition: 'all 0.15s',
             }}>{l === 'en' ? 'English' : 'മലയാളം'}</button>
           ))}
         </div>
@@ -181,34 +200,55 @@ export default function Kiosk() {
         <img
           src="/logo.svg"
           alt="VPS Lakeshore Hospital"
-          style={{ height: 80, filter: 'brightness(0) invert(1)', marginBottom: '2rem', cursor: 'default' }}
+          style={{ height: 88, filter: 'brightness(0) invert(1)', marginBottom: '1.5rem', cursor: 'default', marginTop: '3rem' }}
           onClick={handleLogoTap}
         />
 
-        <h1 style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', fontWeight: 500, margin: '0 0 0.25rem', textAlign: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', fontWeight: 500, margin: '0 0 1.5rem', textAlign: 'center', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {tr('programme')}
+        </p>
+
+        <h1 style={{ color: 'rgba(255,255,255,0.75)', fontSize: '1.35rem', fontWeight: 500, margin: '0 0 0.2rem', textAlign: 'center' }}>
           {tr('welcome')}
         </h1>
-        <h2 style={{ color: 'white', fontSize: '2.25rem', fontWeight: 900, margin: '0 0 0.75rem', textAlign: 'center', lineHeight: 1.15, maxWidth: 480 }}>
+        <h2 style={{ color: 'white', fontSize: '3rem', fontWeight: 900, margin: '0 0 0.75rem', textAlign: 'center', lineHeight: 1.1, maxWidth: 520, letterSpacing: '-0.01em' }}>
           HealthPod
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem', fontStyle: 'italic', margin: '0 0 3rem', textAlign: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1.2rem', fontStyle: 'italic', margin: '0 0 2.5rem', textAlign: 'center', fontWeight: 500 }}>
           {tr('sub')}
         </p>
+
+        {/* Health metrics preview strip */}
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2.75rem' }}>
+          {metrics.map(m => (
+            <div key={m.label} style={{ textAlign: 'center', color: 'rgba(255,255,255,0.8)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>{m.icon}</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', opacity: 0.85 }}>{m.label}</div>
+            </div>
+          ))}
+        </div>
 
         <button
           onClick={() => setScreen('identify')}
           style={{
-            padding: '1.1rem 3rem', fontSize: '1.2rem', fontWeight: 700,
+            padding: '1.2rem 3.5rem', fontSize: '1.3rem', fontWeight: 800,
             background: 'white', color: '#1B75BC',
             border: 'none', borderRadius: '3rem', cursor: 'pointer',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            animation: 'kiosk-pulse 2.8s ease-in-out infinite',
             transition: 'transform 0.1s',
           }}
           onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')}
           onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')}
+          onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
         >
           {tr('startBtn')}
         </button>
+
+        {/* Chairman's promise — bottom */}
+        <p style={{ marginTop: 'auto', paddingTop: '2rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', textAlign: 'center', fontStyle: 'italic', lineHeight: 1.6, maxWidth: 420 }}>
+          {tr('promise')}
+        </p>
 
         {/* PIN dialog */}
         {showPinDialog && (
