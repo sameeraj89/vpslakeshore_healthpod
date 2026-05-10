@@ -92,7 +92,7 @@ export default function Login() {
         {mode === 'login' ? (
           <>
             <div style={{ marginBottom: '2rem' }}>
-              <img src="/logo.png" alt="VPS Lakeshore" style={{ height: 36, marginBottom: '1.5rem', display: 'block' }} className="mobile-only-logo" />
+              <img src="/logo.svg" alt="VPS Lakeshore" style={{ height: 36, marginBottom: '1.5rem', display: 'block' }} className="mobile-only-logo" />
               <h2 style={{ margin: '0 0 0.375rem', fontSize: '1.35rem', fontWeight: 700, color: '#0d1b2a' }}>Welcome back</h2>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem' }}>Sign in to access the HealthPod programme</p>
             </div>
