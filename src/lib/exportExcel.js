@@ -63,8 +63,13 @@ export function exportToExcel(patients, screenings) {
   XLSX.writeFile(wb, filename)
 }
 
+export function isPositiveResult(result) {
+  return !!(result?.toLowerCase().match(/positive|elevated|refer|suspicious|lesion|abnormal/))
+}
+
 // Lead generation export — contact info + risk qualifier + acquisition source
 // Designed for CRM import (Zoho, HubSpot, Salesforce, etc.)
+// Salesforce-ready: includes required Company field; Last Name falls back to Full Name for single-name patients.
 export function exportLeads(patients, screenings, { riskFilter = 'all' } = {}) {
   const RISK_ORDER = { red: 0, orange: 1, amber: 2, green: 3 }
 
@@ -77,7 +82,7 @@ export function exportLeads(patients, screenings, { riskFilter = 'all' } = {}) {
 
   const rows = filtered.map(p => {
     const sc = screenings.filter(s => s.patient_id === p.id)
-    const positiveScreenings = sc.filter(s => s.result === 'Positive').map(s => s.cancer_type).join(', ')
+    const positiveScreenings = sc.filter(s => isPositiveResult(s.result)).map(s => s.cancer_type).join(', ')
     const screeningCount = sc.length
 
     // Risk tier label for CRM tagging
@@ -88,10 +93,15 @@ export function exportLeads(patients, screenings, { riskFilter = 'all' } = {}) {
       green: 'Thriving — Wellness',
     }[p.risk_level] || 'Unknown'
 
+    const nameParts = (p.name || '').trim().split(/\s+/)
+    const firstName = nameParts.length > 1 ? nameParts[0] : ''
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (p.name || '')
+
     return {
-      'First Name': safe(p.name?.split(' ')[0] || p.name),
-      'Last Name': safe(p.name?.split(' ').slice(1).join(' ')),
+      'First Name': safe(firstName),
+      'Last Name': safe(lastName),
       'Full Name': safe(p.name),
+      'Company': 'Individual',
       'Phone': safe(p.phone),
       'Alt Phone': safe(p.phone2),
       'Email': safe(p.email),

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import PageHeader from '../components/ui/PageHeader'
-import { exportToExcel, exportLeads } from '../lib/exportExcel'
+import { exportToExcel, exportLeads, isPositiveResult } from '../lib/exportExcel'
 import { exportDHIS2 } from '../lib/exportDHIS2'
 import { Download, Database, Users } from 'lucide-react'
 import { SCREENING_TYPES } from '../lib/screeningConfig'
@@ -11,10 +11,6 @@ import ReactECharts from 'echarts-for-react'
 
 // Only clinical (non-questionnaire) types for the screening results chart
 const CHART_TYPES = SCREENING_TYPES.filter(t => t.type === 'clinical')
-
-function isPositive(result) {
-  return !!(result?.toLowerCase().match(/positive|elevated|refer|suspicious|lesion|abnormal/))
-}
 
 export default function Reports() {
   const { lang, tr } = useT()
@@ -81,7 +77,7 @@ export default function Reports() {
     icon: ct.icon,
     color: ct.color,
     total: filteredScreenings.filter(s => s.cancer_type === ct.key).length,
-    positive: filteredScreenings.filter(s => s.cancer_type === ct.key && isPositive(s.result)).length,
+    positive: filteredScreenings.filter(s => s.cancer_type === ct.key && isPositiveResult(s.result)).length,
   })).filter(ct => ct.total > 0 || SCREENING_TYPES.find(s => s.key === ct.key)?.category === 'cancer')
 
   const campStats = camps.map(c => {
