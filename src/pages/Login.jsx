@@ -177,20 +177,25 @@ export default function Login() {
             </button>
 
             {/* Guest / kiosk access */}
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <div style={{ marginTop: '0.75rem' }}>
               <button
                 type="button"
                 onClick={handleGuest}
                 disabled={guestLoading}
                 style={{
-                  background: 'none', border: 'none', cursor: guestLoading ? 'wait' : 'pointer',
-                  color: '#64748b', fontSize: '0.875rem', padding: 0,
-                  textDecoration: 'underline', textDecorationStyle: 'dotted',
+                  width: '100%', padding: '0.75rem 1rem',
+                  background: 'transparent',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: 10,
+                  cursor: guestLoading ? 'wait' : 'pointer',
+                  color: '#475569', fontSize: '0.9rem', fontWeight: 600,
+                  minHeight: 48,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
                 }}
               >
                 {guestLoading ? 'Opening kiosk…' : 'Continue as Guest →'}
               </button>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.375rem', textAlign: 'center' }}>
                 For patients — opens the health screening kiosk
               </div>
             </div>
