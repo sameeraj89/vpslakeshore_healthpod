@@ -56,6 +56,7 @@ export default function Kiosk() {
       identifyTitle: 'Find your record',
       identifyPlaceholder: 'Enter UHID, ABHA or mobile number',
       identifyBtn: 'Continue →',
+      skipBtn: "I don't have a record — continue anyway",
       notFound: 'No record found. Please register at the front desk.',
       back: '← Back',
       hraTitle: 'Health Risk Assessment',
@@ -75,6 +76,7 @@ export default function Kiosk() {
       identifyTitle: 'നിങ്ങളുടെ രേഖ കണ്ടെത്തുക',
       identifyPlaceholder: 'UHID, ABHA അല്ലെങ്കിൽ മൊബൈൽ നൽകുക',
       identifyBtn: 'തുടരുക →',
+      skipBtn: 'രേഖ ഇല്ല — തുടരുക',
       notFound: 'രേഖ കണ്ടെത്തിയില്ല. ഫ്രണ്ട് ഡെസ്കിൽ രജിസ്റ്റർ ചെയ്യുക.',
       back: '← തിരികെ',
       hraTitle: 'ആരോഗ്യ റിസ്ക് വിലയിരുത്തൽ',
@@ -246,7 +248,7 @@ export default function Kiosk() {
         background: '#f0f4f8', padding: '2rem',
       }}>
         <div style={{ width: '100%', maxWidth: 480 }}>
-          <button onClick={resetToWelcome} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.95rem', cursor: 'pointer', marginBottom: '1.5rem', padding: 0, fontWeight: 600 }}>
+          <button onClick={resetToWelcome} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.95rem', cursor: 'pointer', marginBottom: '1rem', padding: '0.625rem 0', minHeight: 44, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
             {tr('back')}
           </button>
           <div style={{ background: 'white', borderRadius: 16, padding: '2.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
@@ -285,6 +287,18 @@ export default function Kiosk() {
                 {searching ? '…' : tr('identifyBtn')}
               </button>
             </form>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+            <button
+              onClick={() => { setPatient(null); setScreen('hra') }}
+              style={{
+                background: 'none', border: 'none', color: '#94a3b8',
+                fontSize: '0.85rem', cursor: 'pointer', padding: '0.625rem',
+                minHeight: 44, textDecoration: 'underline', textDecorationStyle: 'dotted',
+              }}
+            >
+              {tr('skipBtn')}
+            </button>
           </div>
         </div>
       </div>
