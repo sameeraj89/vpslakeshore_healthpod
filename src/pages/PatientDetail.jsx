@@ -8,8 +8,10 @@ import ScreeningForm from '../components/forms/ScreeningForm'
 import { SCREENING_TYPES, SCREENING_CATEGORIES } from '../lib/screeningConfig'
 import { useT } from '../lib/lang'
 import TX from '../lib/translations'
-import { ArrowLeft, User, Phone, MapPin, Shield, Activity, SendHorizonal, FileText, Stethoscope, CalendarClock, Printer, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, User, Phone, MapPin, Shield, Activity, SendHorizonal, FileText, Stethoscope, CalendarClock, Printer, ChevronDown, ChevronUp, FileDown } from 'lucide-react'
 import { can } from '../lib/roles'
+import { getTier } from '../lib/riskConfig'
+import { generateFullReport } from '../lib/generatePDF'
 
 export default function PatientDetail() {
   const { id } = useParams()
@@ -22,6 +24,33 @@ export default function PatientDetail() {
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'risk')
   const [loading, setLoading] = useState(true)
   const [referralOpen, setReferralOpen] = useState(false)
+  const [domainScores, setDomainScores] = useState(null)
+  const [reportLoading, setReportLoading] = useState(false)
+
+  async function handleFullReport() {
+    setReportLoading(true)
+    try {
+      const [{ data: referrals }, { data: doctorNotes }, { data: followups }] = await Promise.all([
+        supabase.from('referrals').select('*').eq('patient_id', id).order('created_at', { ascending: false }).limit(1),
+        supabase.from('doctor_notes').select('*').eq('patient_id', id).order('created_at', { ascending: false }).limit(5),
+        supabase.from('follow_ups').select('*').eq('patient_id', id).order('followup_date', { ascending: true }),
+      ])
+      const score = patient.risk_score || 0
+      const tier = getTier(score)
+      await generateFullReport(
+        patient, score, tier,
+        domainScores,
+        patientScreenings,
+        referrals?.[0] || null,
+        doctorNotes || [],
+        followups || [],
+      )
+    } catch (err) {
+      console.error('Report generation failed', err)
+    } finally {
+      setReportLoading(false)
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -67,9 +96,19 @@ export default function PatientDetail() {
         <button className="btn-ghost" onClick={() => navigate('/patients')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', paddingLeft: 0 }}>
           <ArrowLeft size={15} /> {tr(TX.common.backToPatients)}
         </button>
-        <button className="btn-ghost" onClick={() => navigate(`/patients/${id}/summary`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}>
-          <Printer size={14} /> {tr(TX.common.printSummary)}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={handleFullReport}
+            disabled={reportLoading}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', padding: '0.45rem 0.875rem', background: '#1B75BC', color: 'white', border: 'none', borderRadius: 8, cursor: reportLoading ? 'wait' : 'pointer', fontWeight: 600 }}
+          >
+            <FileDown size={14} />
+            {reportLoading ? 'Generating…' : 'Full Report PDF'}
+          </button>
+          <button className="btn-ghost" onClick={() => navigate(`/patients/${id}/summary`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}>
+            <Printer size={14} /> {tr(TX.common.printSummary)}
+          </button>
+        </div>
       </div>
 
       {/* Patient card */}
@@ -135,7 +174,10 @@ export default function PatientDetail() {
       {/* Tab content */}
       <div className="card">
         {activeTab === 'risk' && (
-          <RiskAssessment patient={patient} onDone={({ score, tier }) => setPatient(p => ({ ...p, risk_score: score, risk_level: tier.level }))} />
+          <RiskAssessment patient={patient} onDone={({ score, tier, domainScores: ds }) => {
+            setPatient(p => ({ ...p, risk_score: score, risk_level: tier.level }))
+            if (ds) setDomainScores(ds)
+          }} />
         )}
         {activeTab === 'screenings' && (
           <ScreeningsPanel

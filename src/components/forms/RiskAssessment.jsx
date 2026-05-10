@@ -202,7 +202,10 @@ export default function RiskAssessment({ patient, onDone }) {
       }
       showToast(lang === 'ml' ? 'റിസ്ക് അസസ്മെന്റ് സേവ് ചെയ്തു' : 'Risk assessment saved')
       setDone(true)
-      onDone?.({ score: totalScore, tier })
+      const domainScores = DOMAINS.map(d =>
+        d.questions.reduce((s, q) => s + (answers[`${d.key}_${q.key}`]?.points || 0), 0)
+      )
+      onDone?.({ score: totalScore, tier, domainScores })
     } catch (err) {
       showToast(err.message || 'Failed to save', 'error')
     } finally {
