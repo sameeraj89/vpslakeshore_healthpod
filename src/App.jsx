@@ -15,8 +15,10 @@ import Camps from './pages/Camps'
 import Screenings from './pages/Screenings'
 import Reports from './pages/Reports'
 import UserManagement from './pages/admin/UserManagement'
+import HealthPods from './pages/HealthPods'
+import Campaigns from './pages/Campaigns'
 import Kiosk from './pages/Kiosk'
-import { isAdminOrCoordinator } from './lib/roles'
+import { canAccess } from './lib/roles'
 
 function SetupScreen() {
   return (
@@ -88,16 +90,16 @@ function AppRoutes() {
       <Route path="*" element={
         <Layout>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/patients" element={<Patients />} />
-            <Route path="/patients/:id" element={<PatientDetail />} />
-            <Route path="/camps" element={<Camps />} />
-            <Route path="/screenings" element={<Screenings />} />
-            <Route path="/reports" element={<Reports />} />
-            {isAdminOrCoordinator(user) && (
-              <Route path="/admin/users" element={<UserManagement />} />
-            )}
+            <Route path="/" element={canAccess(user, 'dashboard') ? <Dashboard /> : <Navigate to="/kiosk" replace />} />
+            <Route path="/register" element={canAccess(user, 'register') ? <Register /> : <Navigate to="/" replace />} />
+            <Route path="/patients" element={canAccess(user, 'patients') ? <Patients /> : <Navigate to="/" replace />} />
+            <Route path="/patients/:id" element={canAccess(user, 'patients') ? <PatientDetail /> : <Navigate to="/" replace />} />
+            <Route path="/camps" element={canAccess(user, 'camps') ? <Camps /> : <Navigate to="/" replace />} />
+            <Route path="/screenings" element={canAccess(user, 'screenings') ? <Screenings /> : <Navigate to="/" replace />} />
+            <Route path="/reports" element={canAccess(user, 'reports') ? <Reports /> : <Navigate to="/" replace />} />
+            <Route path="/healthpods" element={canAccess(user, 'healthpods') ? <HealthPods /> : <Navigate to="/" replace />} />
+            <Route path="/campaigns" element={canAccess(user, 'campaigns') ? <Campaigns /> : <Navigate to="/" replace />} />
+            <Route path="/admin/users" element={canAccess(user, 'admin_users') ? <UserManagement /> : <Navigate to="/" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

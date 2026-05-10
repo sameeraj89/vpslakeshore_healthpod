@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, UserPlus, Users, ClipboardList, LogOut, WifiOff, RefreshCw, Settings, Calendar, BarChart2, MonitorSmartphone } from 'lucide-react'
+import { LayoutDashboard, UserPlus, Users, ClipboardList, LogOut, WifiOff, RefreshCw, Settings, Calendar, BarChart2, MonitorSmartphone, MapPin, Megaphone } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useApp } from '../../lib/store'
 import { useT } from '../../lib/lang'
 import TX from '../../lib/translations'
 import { queueCount, syncQueue, isOnline } from '../../lib/offlineQueue'
+import { canAccess } from '../../lib/roles'
 
 export default function Sidebar({ mobileOpen, onClose }) {
   const { pathname } = useLocation()
@@ -13,17 +14,20 @@ export default function Sidebar({ mobileOpen, onClose }) {
   const { setUser, savePatient, showToast, user } = useApp()
   const { lang, toggle, tr } = useT()
 
-  const nav = [
-    { label: tr(TX.sidebar.dashboard),  icon: LayoutDashboard, path: '/' },
-    { label: tr(TX.sidebar.newPatient), icon: UserPlus,         path: '/register' },
-    { label: tr(TX.sidebar.patients),   icon: Users,            path: '/patients' },
-    { label: tr(TX.sidebar.screenings), icon: ClipboardList,    path: '/screenings' },
-    { label: tr(TX.sidebar.camps),      icon: Calendar,         path: '/camps' },
-    { label: tr(TX.sidebar.reports),    icon: BarChart2,        path: '/reports' },
+  const allNav = [
+    { label: tr(TX.sidebar.dashboard),  icon: LayoutDashboard, path: '/',            screen: 'dashboard' },
+    { label: tr(TX.sidebar.newPatient), icon: UserPlus,         path: '/register',   screen: 'register' },
+    { label: tr(TX.sidebar.patients),   icon: Users,            path: '/patients',   screen: 'patients' },
+    { label: tr(TX.sidebar.screenings), icon: ClipboardList,    path: '/screenings', screen: 'screenings' },
+    { label: tr(TX.sidebar.camps),      icon: Calendar,         path: '/camps',      screen: 'camps' },
+    { label: tr(TX.sidebar.reports),    icon: BarChart2,        path: '/reports',    screen: 'reports' },
   ]
+  const nav = allNav.filter(item => canAccess(user, item.screen))
   const adminNav = [
-    { label: tr(TX.sidebar.userManagement), icon: Settings, path: '/admin/users' },
-  ]
+    { label: 'HealthPods',        icon: MapPin,     path: '/healthpods',   screen: 'healthpods' },
+    { label: 'Campaigns',         icon: Megaphone,  path: '/campaigns',    screen: 'campaigns' },
+    { label: tr(TX.sidebar.userManagement), icon: Settings, path: '/admin/users', screen: 'admin_users' },
+  ].filter(item => canAccess(user, item.screen))
 
   const [pending, setPending] = useState(queueCount())
   const [online, setOnline] = useState(isOnline())
@@ -58,7 +62,6 @@ export default function Sidebar({ mobileOpen, onClose }) {
     setUser(null)
   }
 
-  const isAdmin = user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'coordinator'
 
   return (
     <aside className={`app-sidebar${mobileOpen ? ' open' : ''}`} style={{
@@ -99,7 +102,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
           </button>
         ))}
 
-        {isAdmin && (
+        {adminNav.length > 0 && (
           <>
             <div className="section-title" style={{ marginTop: '0.5rem' }}>{tr(TX.sidebar.admin)}</div>
             {adminNav.map(item => (

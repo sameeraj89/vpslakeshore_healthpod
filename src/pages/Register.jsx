@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../lib/store'
+import { supabase } from '../lib/supabase'
 import { generateUHID, calculateAge } from '../lib/utils'
 import PageHeader from '../components/ui/PageHeader'
 import ConsentModal from '../components/ui/ConsentModal'
 import { addToQueue, isOnline, syncQueue } from '../lib/offlineQueue'
-import { User, Phone, MapPin, Briefcase, Heart, CreditCard, WifiOff } from 'lucide-react'
+import { User, Phone, MapPin, Briefcase, Heart, CreditCard, WifiOff, Megaphone } from 'lucide-react'
 import { useT } from '../lib/lang'
 import TX from '../lib/translations'
 
@@ -47,6 +48,8 @@ export default function Register() {
   const [saving, setSaving] = useState(false)
   const [showConsent, setShowConsent] = useState(true)
   const [consentGiven, setConsentGiven] = useState(false)
+  const [pods, setPods] = useState([])
+  const [activeCampaign, setActiveCampaign] = useState(null)
 
   const [online, setOnline] = useState(isOnline())
   useEffect(() => {
@@ -57,13 +60,54 @@ export default function Register() {
     return () => { window.removeEventListener('online', up); window.removeEventListener('offline', dn) }
   }, [])
 
+  useEffect(() => {
+    supabase.from('healthpods').select('id, code, name, district').eq('active', true).order('code')
+      .then(({ data }) => setPods(data || []))
+  }, [])
+
   const [form, setForm] = useState({
     name: '', dob: '', gender: '', phone: '', phone2: '', email: '',
     address: '', district: 'Ernakulam', occupation: '', education: '',
-    marital_status: '', insurance: '', camp_name: '', referred_by: '',
+    marital_status: '', insurance: '', healthpod_id: '', campaign_id: '', referred_by: '',
     tobacco_use: '', alcohol_use: '',
     aadhaar_last4: '', abha_number: '', abha_address: '',
   })
+
+  async function handlePodChange(podId) {
+    set('healthpod_id', podId)
+    set('campaign_id', '')
+    setActiveCampaign(null)
+    if (!podId) return
+    const today = new Date().toISOString().split('T')[0]
+    const { data } = await supabase
+      .from('campaigns')
+      .select('*, campaign_healthpods!inner(healthpod_id)')
+      .eq('active', true)
+      .lte('start_date', today)
+      .gte('end_date', today)
+      .eq('campaign_healthpods.healthpod_id', podId)
+      .limit(1)
+      .maybeSingle()
+    if (data) {
+      setActiveCampaign(data)
+      set('campaign_id', data.id)
+    } else {
+      // also check campaigns assigned to all pods (no specific pod assignment)
+      const { data: globalCampaign } = await supabase
+        .from('campaigns')
+        .select('id, name, description, cancer_types, end_date')
+        .eq('active', true)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .not('id', 'in', `(select campaign_id from campaign_healthpods)`)
+        .limit(1)
+        .maybeSingle()
+      if (globalCampaign) {
+        setActiveCampaign(globalCampaign)
+        set('campaign_id', globalCampaign.id)
+      }
+    }
+  }
 
   const age = calculateAge(form.dob)
 
@@ -222,13 +266,32 @@ export default function Register() {
           <Field label={tr(TX.register.occupation)}>
             <input className="form-input" value={form.occupation} onChange={e => set('occupation', e.target.value)} placeholder={tr(TX.register.occupationPh)} />
           </Field>
-          <Field label={tr(TX.register.campVenue)}>
-            <input className="form-input" value={form.camp_name} onChange={e => set('camp_name', e.target.value)} placeholder="e.g. Kalamassery Camp May 2026" />
+          <Field label="HealthPod Location">
+            <select className="form-select" value={form.healthpod_id} onChange={e => handlePodChange(e.target.value)}>
+              <option value="">— Select HealthPod —</option>
+              {pods.map(p => <option key={p.id} value={p.id}>{p.code} — {p.name}{p.district ? ` (${p.district})` : ''}</option>)}
+            </select>
           </Field>
           <Field label={tr(TX.register.referredBy)}>
             <input className="form-input" value={form.referred_by} onChange={e => set('referred_by', e.target.value)} placeholder={tr(TX.register.referredByPh)} />
           </Field>
         </Section>
+
+        {/* Active campaign banner */}
+        {activeCampaign && (
+          <div style={{ background: 'rgba(27,117,188,0.06)', border: '1.5px solid rgba(27,117,188,0.25)', borderRadius: 10, padding: '0.875rem 1rem', marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+            <Megaphone size={18} color="#1B75BC" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1B75BC' }}>Active Campaign: {activeCampaign.name}</div>
+              {activeCampaign.description && <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: 2 }}>{activeCampaign.description}</div>}
+              {activeCampaign.cancer_types?.length > 0 && (
+                <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 4 }}>
+                  Focus: {activeCampaign.cancer_types.join(', ')} · Ends {activeCampaign.end_date}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <Section icon={CreditCard} title={tr(TX.register.healthIds)}>
           <Field label={tr(TX.register.aadhaarLast4)}>

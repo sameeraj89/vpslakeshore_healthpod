@@ -19,7 +19,11 @@ export default function Reports() {
   const [screenings, setScreenings] = useState([])
   const [camps, setCamps] = useState([])
   const [followups, setFollowups] = useState([])
+  const [pods, setPods] = useState([])
+  const [campaigns, setCampaigns] = useState([])
   const [filterCamp, setFilterCamp] = useState('')
+  const [filterPod, setFilterPod] = useState('')
+  const [filterCampaign, setFilterCampaign] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [exporting, setExporting] = useState(false)
@@ -38,16 +42,20 @@ export default function Reports() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const [{ data: pts }, { data: scs }, { data: cmps }, { data: fus }] = await Promise.all([
+      const [{ data: pts }, { data: scs }, { data: cmps }, { data: fus }, { data: pds }, { data: cpns }] = await Promise.all([
         supabase.from('patients').select('*').order('created_at', { ascending: false }).limit(10000),
         supabase.from('screenings').select('*').limit(50000),
         supabase.from('camps').select('*').order('date', { ascending: false }).limit(500),
         supabase.from('follow_ups').select('*, patients(name,uhid)').limit(5000),
+        supabase.from('healthpods').select('id, code, name, district').eq('active', true).order('code'),
+        supabase.from('campaigns').select('id, name, start_date, end_date').order('start_date', { ascending: false }).limit(100),
       ])
       setPatients(pts || [])
       setScreenings(scs || [])
       setCamps(cmps || [])
       setFollowups(fus || [])
+      setPods(pds || [])
+      setCampaigns(cpns || [])
       setLoading(false)
     }
     load()
@@ -55,6 +63,8 @@ export default function Reports() {
 
   const filteredPatients = patients.filter(p => {
     if (filterCamp && p.camp_name !== filterCamp) return false
+    if (filterPod && p.healthpod_id !== filterPod) return false
+    if (filterCampaign && p.campaign_id !== filterCampaign) return false
     if (dateFrom && p.created_at < dateFrom) return false
     if (dateTo && p.created_at.slice(0, 10) > dateTo) return false
     return true
@@ -162,7 +172,19 @@ export default function Reports() {
       {/* Filters */}
       <div className="card" style={{ marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', flexShrink: 0 }}>{tr(TX.reports.filterLabel)}</div>
-        <select className="form-select" value={filterCamp} onChange={e => setFilterCamp(e.target.value)} style={{ width: 200 }}>
+        {pods.length > 0 && (
+          <select className="form-select" value={filterPod} onChange={e => setFilterPod(e.target.value)} style={{ width: 180 }}>
+            <option value="">All HealthPods</option>
+            {pods.map(p => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
+          </select>
+        )}
+        {campaigns.length > 0 && (
+          <select className="form-select" value={filterCampaign} onChange={e => setFilterCampaign(e.target.value)} style={{ width: 180 }}>
+            <option value="">All Campaigns</option>
+            {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
+        <select className="form-select" value={filterCamp} onChange={e => setFilterCamp(e.target.value)} style={{ width: 180 }}>
           <option value="">{tr(TX.reports.allCamps)}</option>
           {camps.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
         </select>
@@ -174,8 +196,8 @@ export default function Reports() {
           <label style={{ fontSize: '0.78rem', color: '#64748b', whiteSpace: 'nowrap' }}>{tr(TX.reports.to)}</label>
           <input className="form-input" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ width: 150 }} />
         </div>
-        {(filterCamp || dateFrom || dateTo) && (
-          <button className="btn-ghost" onClick={() => { setFilterCamp(''); setDateFrom(''); setDateTo('') }}>{tr(TX.reports.clear)}</button>
+        {(filterCamp || filterPod || filterCampaign || dateFrom || dateTo) && (
+          <button className="btn-ghost" onClick={() => { setFilterCamp(''); setFilterPod(''); setFilterCampaign(''); setDateFrom(''); setDateTo('') }}>{tr(TX.reports.clear)}</button>
         )}
       </div>
 
@@ -260,6 +282,44 @@ export default function Reports() {
           )}
         </div>
       </div>
+
+      {/* HealthPod breakdown */}
+      {pods.length > 0 && (
+        <div className="card" style={{ marginBottom: '1.25rem' }}>
+          <h3 style={{ margin: '0 0 1rem', fontSize: '0.9rem', fontWeight: 700 }}>HealthPod Summary</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Pod</th>
+                <th>District</th>
+                <th>Patients</th>
+                <th>Screenings</th>
+                <th>Avg Score</th>
+                <th>High Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pods.map(pod => {
+                const podPts = patients.filter(p => p.healthpod_id === pod.id)
+                const podScs = screenings.filter(s => podPts.some(p => p.id === s.patient_id))
+                const podAvg = podPts.length > 0 ? Math.round(podPts.reduce((s, p) => s + (p.risk_score || 0), 0) / podPts.length) : 0
+                const podHigh = podPts.filter(p => p.risk_level === 'high' || p.risk_level === 'red').length
+                if (podPts.length === 0) return null
+                return (
+                  <tr key={pod.id}>
+                    <td style={{ fontWeight: 600 }}>{pod.code} — {pod.name}</td>
+                    <td style={{ fontSize: '0.85rem', color: '#64748b' }}>{pod.district || '—'}</td>
+                    <td style={{ fontWeight: 700, color: '#1B75BC' }}>{podPts.length}</td>
+                    <td style={{ fontWeight: 700, color: '#10b981' }}>{podScs.length}</td>
+                    <td style={{ fontWeight: 700, color: '#f59e0b' }}>{podAvg}/100</td>
+                    <td style={{ fontWeight: 700, color: '#A6215A' }}>{podHigh}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Camp-wise breakdown */}
       {campStats.length > 0 && (

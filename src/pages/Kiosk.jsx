@@ -36,12 +36,13 @@ export default function Kiosk() {
   const navigate = useNavigate()
   const { saveRiskAssessment, updatePatient, showToast } = useApp()
 
-  const [screen, setScreen] = useState('welcome')  // welcome | identify | hra | thankyou
+  const [screen, setScreen] = useState('welcome')  // welcome | identify | hra
   const [lang, setLang] = useState('en')
   const [patient, setPatient] = useState(null)
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [resultDone, setResultDone] = useState(false)
 
   // Staff exit: 5 taps in < 2.5s
   const tapTimes = useRef([])
@@ -101,16 +102,17 @@ export default function Kiosk() {
     setPatient(null)
     setQuery('')
     setSearchError('')
+    setResultDone(false)
   }
 
-  // Auto-reset from thank-you
+  // Auto-reset after ScoreCard is shown
   const [countdown, setCountdown] = useState(Math.floor(THANKYOU_MS / 1000))
   useEffect(() => {
-    if (screen !== 'thankyou') { setCountdown(Math.floor(THANKYOU_MS / 1000)); return }
+    if (!resultDone) { setCountdown(Math.floor(THANKYOU_MS / 1000)); return }
     const interval = setInterval(() => setCountdown(c => c - 1), 1000)
     const timer = setTimeout(resetToWelcome, THANKYOU_MS)
     return () => { clearInterval(interval); clearTimeout(timer) }
-  }, [screen])
+  }, [resultDone])
 
   // Staff tap-out on logo
   function handleLogoTap() {
@@ -331,36 +333,34 @@ export default function Kiosk() {
             </div>
           </div>
 
-          {/* RiskAssessment — the existing component handles everything */}
+          {/* RiskAssessment — shows ScoreCard internally when done */}
           <div style={{ background: 'white', borderRadius: 14, padding: '1.5rem', boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
             <RiskAssessment
               patient={patient}
               lang={lang}
-              onDone={() => setScreen('thankyou')}
+              onDone={() => setResultDone(true)}
             />
           </div>
+
+          {/* Countdown strip — appears after ScoreCard is shown */}
+          {resultDone && (
+            <div style={{ marginTop: '1.5rem', padding: '1.25rem 1.5rem', background: 'white', borderRadius: 14, boxShadow: '0 2px 16px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                {lang === 'ml' ? 'ആരംഭ സ്ക്രീനിലേക്ക്' : tr('resetIn')} <strong>{countdown}</strong> {tr('seconds')}…
+              </div>
+              <button
+                onClick={resetToWelcome}
+                style={{ padding: '0.625rem 1.5rem', background: 'linear-gradient(90deg, #1B75BC, #145e9a)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+              >
+                {lang === 'ml' ? '← ആരംഭം' : '← Return to Start'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     )
   }
 
-  // ─── Thank You Screen ─────────────────────────────────────────────────────
-  return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      background: 'linear-gradient(160deg, #f0fdf4, #f0f4f8)', padding: '2rem', textAlign: 'center',
-    }}>
-      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✅</div>
-      <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b', margin: '0 0 0.75rem' }}>
-        {tr('thankTitle')}
-      </h2>
-      <p style={{ color: '#475569', fontSize: '1.1rem', maxWidth: 420, margin: '0 0 2.5rem', lineHeight: 1.7 }}>
-        {tr('thankMsg')}
-      </p>
-      <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-        {tr('resetIn')} {countdown} {tr('seconds')}…
-      </div>
-    </div>
-  )
+  // Fallback — redirect to welcome
+  return null
 }

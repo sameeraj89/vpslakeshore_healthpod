@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useApp } from '../../lib/store'
 import { useLang, t } from '../../lib/lang'
 import { DOMAINS, getTier, generateVoucherCode } from '../../lib/riskConfig'
@@ -66,6 +67,7 @@ export default function RiskAssessment({ patient, onDone }) {
   const [btReadings, setBtReadings] = useState({}) // { qKey: display string }
   const [btWeight, setBtWeight] = useState(null) // kg from scale
   const [heightCm, setHeightCm] = useState('')   // for BMI calculation
+  const [manualInputs, setManualInputs] = useState({ systolic: '', diastolic: '', spo2: '', weight: '', height: '', glucose: '' })
 
   const totalScore = Object.values(answers).reduce((s, v) => s + (v?.points || 0), 0)
   const fullMax = DOMAINS.reduce((s, d) => s + d.maxPoints, 0)
@@ -132,6 +134,30 @@ export default function RiskAssessment({ patient, onDone }) {
     }
   }
 
+  function handleManualInput(field, val) {
+    const next = { ...manualInputs, [field]: val }
+    setManualInputs(next)
+    const sys = parseInt(next.systolic), dia = parseInt(next.diastolic)
+    if ((field === 'systolic' || field === 'diastolic') && sys > 50 && dia > 30 && dia < sys) {
+      btAutoSelect('blood_pressure', classifyBP(sys, dia), `${sys}/${dia} mmHg`)
+    }
+    if (field === 'spo2') {
+      const s = parseInt(val)
+      if (s >= 70 && s <= 100) btAutoSelect('spo2', classifySpO2(s), `${s}%`)
+    }
+    if (field === 'weight' || field === 'height') {
+      const w = parseFloat(next.weight), h = parseFloat(next.height) / 100
+      if (w > 20 && h > 0.5 && h < 2.5) {
+        const bmi = Math.round((w / (h * h)) * 10) / 10
+        btAutoSelect('bmi', classifyBMI(bmi), `BMI ${bmi}`)
+      }
+    }
+    if (field === 'glucose') {
+      const g = parseInt(val)
+      if (g > 30 && g < 800) btAutoSelect('blood_sugar', classifyGlucose(g), `${g} mg/dL`)
+    }
+  }
+
   // Recompute BMI when height changes with existing weight
   function handleHeightChange(val) {
     setHeightCm(val)
@@ -165,6 +191,15 @@ export default function RiskAssessment({ patient, onDone }) {
         hypertension: answers['biometrics_blood_pressure']?.points === 0,
       })
       await updatePatient(patient.id, { risk_score: totalScore, risk_level: tier.level })
+      if (tier.level === 'red' && patient?.id) {
+        supabase.from('staff_alerts').insert({
+          patient_id: patient.id,
+          alert_type: 'red_tier_hra',
+          score: totalScore,
+          message: `Red-tier HRA: ${patient.name || 'Patient'} scored ${totalScore}/100`,
+          resolved: false,
+        }).then(() => {})
+      }
       showToast(lang === 'ml' ? 'റിസ്ക് അസസ്മെന്റ് സേവ് ചെയ്തു' : 'Risk assessment saved')
       setDone(true)
       onDone?.({ score: totalScore, tier })
@@ -257,6 +292,59 @@ export default function RiskAssessment({ patient, onDone }) {
           {domain.questions.filter(q => getAnswer(q.key)).length}/{domain.questions.length}
         </span>
       </div>
+
+      {/* Manual numeric entry — always shown on biometrics domain */}
+      {domain.key === 'biometrics' && (
+        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '0.875rem', marginBottom: '0.875rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.625rem' }}>
+            📋 {lang === 'ml' ? 'അളവുകൾ നൽകുക (manual)' : 'Enter measurements manually'}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem' }}>
+            {/* BP */}
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.2rem' }}>{lang === 'ml' ? 'BP (mmHg)' : 'Blood Pressure (mmHg)'}</div>
+              <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                <input type="number" min="60" max="260" placeholder="Sys" value={manualInputs.systolic}
+                  onChange={e => handleManualInput('systolic', e.target.value)}
+                  style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem' }} />
+                <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>/</span>
+                <input type="number" min="30" max="160" placeholder="Dia" value={manualInputs.diastolic}
+                  onChange={e => handleManualInput('diastolic', e.target.value)}
+                  style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem' }} />
+              </div>
+            </div>
+            {/* SpO2 */}
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.2rem' }}>SpO₂ (%)</div>
+              <input type="number" min="70" max="100" placeholder="e.g. 98" value={manualInputs.spo2}
+                onChange={e => handleManualInput('spo2', e.target.value)}
+                style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem', boxSizing: 'border-box' }} />
+            </div>
+            {/* Weight + Height */}
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.2rem' }}>{lang === 'ml' ? 'ഭാരം / ഉയരം' : 'Weight (kg) / Height (cm)'}</div>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <input type="number" min="20" max="300" placeholder="kg" value={manualInputs.weight}
+                  onChange={e => handleManualInput('weight', e.target.value)}
+                  style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem' }} />
+                <input type="number" min="100" max="220" placeholder="cm" value={manualInputs.height}
+                  onChange={e => handleManualInput('height', e.target.value)}
+                  style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem' }} />
+              </div>
+            </div>
+            {/* Blood sugar */}
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.2rem' }}>{lang === 'ml' ? 'രക്തത്തിലെ പഞ്ചസാര (mg/dL)' : 'Blood Sugar (mg/dL)'}</div>
+              <input type="number" min="30" max="800" placeholder="e.g. 110" value={manualInputs.glucose}
+                onChange={e => handleManualInput('glucose', e.target.value)}
+                style={{ width: '100%', padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.82rem', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+          <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.4rem' }}>
+            {lang === 'ml' ? 'മൂല്യം നൽകിയാൽ ഉത്തരം യോമാറ്റിക്കായി തിരഞ്ഞെടുക്കും' : 'Values auto-select the correct answer below'}
+          </div>
+        </div>
+      )}
 
       {/* Bluetooth panel — only on biometrics domain */}
       {domain.key === 'biometrics' && btSupported() && (
