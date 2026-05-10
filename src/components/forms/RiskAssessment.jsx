@@ -335,7 +335,7 @@ export default function RiskAssessment({ patient, onDone }) {
           const selected = getAnswer(q.key)
           return (
             <div key={q.key} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '0.625rem', border: `1px solid ${selected ? '#1B75BC33' : '#e2e8f0'}`, transition: 'border-color 0.2s' }}>
-              <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.75rem', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.75rem', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <span>{qi + 1}. {t(q.label, lang)}</span>
                 {/* Per-question feedback + BT badge on selection */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
@@ -367,11 +367,12 @@ export default function RiskAssessment({ patient, onDone }) {
                       style={{
                         position: 'relative',
                         display: 'flex', alignItems: 'center', gap: '0.4rem',
-                        padding: '0.45rem 0.875rem',
+                        padding: '0.625rem 1rem',
+                        minHeight: 44,
                         border: `1.5px solid ${isSelected ? tone.border : '#cbd5e1'}`,
                         borderRadius: '0.5rem',
                         cursor: 'pointer',
-                        fontSize: '0.85rem',
+                        fontSize: '0.9375rem',
                         background: isSelected ? tone.bg : 'white',
                         color: isSelected ? tone.text : '#475569',
                         fontWeight: isSelected ? 700 : 400,
@@ -408,7 +409,7 @@ export default function RiskAssessment({ patient, onDone }) {
                   display: 'flex', alignItems: 'flex-start', gap: '0.5rem',
                 }}>
                   <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>💡</span>
-                  <span style={{ fontSize: '0.78rem', color: '#1e3a5f', lineHeight: 1.55 }}>
+                  <span style={{ fontSize: '0.875rem', color: '#1e3a5f', lineHeight: 1.55 }}>
                     {t(q.fact, lang)}
                   </span>
                 </div>
