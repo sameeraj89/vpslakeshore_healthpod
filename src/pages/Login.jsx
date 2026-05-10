@@ -72,20 +72,8 @@ export default function Login() {
         <div style={{ textAlign: 'center', color: 'white' }}>
           <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}>HealthPod</h1>
           <p style={{ margin: '0 0 0.5rem', opacity: 0.65, fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 500 }}>Screening &amp; Early Detection Programme</p>
-          <p style={{ margin: '0 0 2.5rem', fontSize: '1.05rem', fontStyle: 'italic', fontWeight: 600, opacity: 0.95, letterSpacing: '0.01em' }}>Your Health. Revealed. Rewarded.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', textAlign: 'left', maxWidth: 260 }}>
-            {[
-              '5-cancer screening in one visit',
-              '100-point NCD risk assessment',
-              'ABHA-linked patient records',
-              'Works offline — syncs when connected',
-            ].map(text => (
-              <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', marginTop: '0.45rem', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.875rem', opacity: 0.9, lineHeight: 1.5 }}>{text}</span>
-              </div>
-            ))}
-          </div>
+          <p style={{ margin: 0, fontSize: '1.05rem', fontStyle: 'italic', fontWeight: 600, opacity: 0.95, letterSpacing: '0.01em' }}>Your Health. Revealed. Rewarded.</p>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '1.05rem', fontStyle: 'italic', fontWeight: 600, opacity: 0.95, letterSpacing: '0.01em' }}>In 10 min.</p>
         </div>
         <div style={{ marginTop: 'auto', color: 'rgba(255,255,255,0.45)', fontSize: '0.72rem', textAlign: 'center', lineHeight: 1.7 }}>
           "Prevention is not a department at Lakeshore.<br />It is a promise."
