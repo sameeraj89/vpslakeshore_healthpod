@@ -174,10 +174,20 @@ export default function RiskAssessment({ patient, onDone }) {
     const allAnswered = DOMAINS.every(d => d.questions.every(q => answers[`${d.key}_${q.key}`]))
     if (!allAnswered) { showToast('Please answer all questions before saving', 'error'); return }
     setSaving(true)
+    const tier = getTier(totalScore)
+    const domainScores = DOMAINS.map(d =>
+      d.questions.reduce((s, q) => s + (answers[`${d.key}_${q.key}`]?.points || 0), 0)
+    )
+    // Guest flow (no patient record) — show score without saving to DB
+    if (!patient?.id) {
+      setDone(true)
+      onDone?.({ score: totalScore, tier, domainScores })
+      setSaving(false)
+      return
+    }
     try {
       const answersMap = {}
       Object.entries(answers).forEach(([k, v]) => { answersMap[k] = t(v.label, lang) })
-      const tier = getTier(totalScore)
       await saveRiskAssessment({
         patient_id: patient.id,
         score: totalScore,
@@ -191,7 +201,7 @@ export default function RiskAssessment({ patient, onDone }) {
         hypertension: answers['biometrics_blood_pressure']?.points === 0,
       })
       await updatePatient(patient.id, { risk_score: totalScore, risk_level: tier.level })
-      if (tier.level === 'red' && patient?.id) {
+      if (tier.level === 'red') {
         supabase.from('staff_alerts').insert({
           patient_id: patient.id,
           alert_type: 'red_tier_hra',
@@ -202,9 +212,6 @@ export default function RiskAssessment({ patient, onDone }) {
       }
       showToast(lang === 'ml' ? 'റിസ്ക് അസസ്മെന്റ് സേവ് ചെയ്തു' : 'Risk assessment saved')
       setDone(true)
-      const domainScores = DOMAINS.map(d =>
-        d.questions.reduce((s, q) => s + (answers[`${d.key}_${q.key}`]?.points || 0), 0)
-      )
       onDone?.({ score: totalScore, tier, domainScores })
     } catch (err) {
       showToast(err.message || 'Failed to save', 'error')
