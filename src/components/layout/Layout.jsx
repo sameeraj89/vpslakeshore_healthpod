@@ -25,8 +25,9 @@ export default function Layout({ children }) {
         {/* Mobile top bar */}
         <div className="mobile-header">
           <button
+            aria-label="Open navigation menu"
             onClick={() => setMenuOpen(true)}
-            style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, minWidth: 44, minHeight: 44 }}
           >
             <Menu size={20} color="#475569" />
           </button>

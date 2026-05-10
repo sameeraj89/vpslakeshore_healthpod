@@ -18,9 +18,12 @@ export default function Dashboard() {
   const [recentPatients, setRecentPatients] = useState([])
   const [highRisk, setHighRisk] = useState([])
   const [overdueFollowups, setOverdueFollowups] = useState([])
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     async function load() {
+      try {
       const today = new Date().toISOString().split('T')[0]
       const [pRes, sRes, fuRes] = await Promise.all([
         supabase.from('patients').select('id, name, uhid, age, gender, risk_level, risk_score, created_at, referred'),
@@ -54,10 +57,20 @@ export default function Dashboard() {
       setRecentPatients([...pts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5))
       setHighRisk([...pts].filter(p => p.risk_level === 'high').sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0)).slice(0, 5))
       setOverdueFollowups(fuRes.data || [])
+      } catch {
+        setLoadError(true)
+      }
     }
     load()
-  }, [])
+  }, [retryKey])
 
+  if (loadError) return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div style={{ color: '#991b1b', fontWeight: 600, marginBottom: '0.5rem' }}>Could not load dashboard data</div>
+      <div style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1rem' }}>Check your connection and try again.</div>
+      <button className="btn-secondary" onClick={() => { setLoadError(false); setRetryKey(k => k + 1) }}>Retry</button>
+    </div>
+  )
   if (!stats) return <div style={{ padding: '2rem', color: '#94a3b8' }}>{tr(TX.dashboard.loading)}</div>
 
   return (
