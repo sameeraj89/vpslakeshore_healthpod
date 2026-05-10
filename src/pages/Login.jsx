@@ -65,7 +65,7 @@ export default function Login() {
         }}
       >
         <img
-          src="/logo.png"
+          src="/logo.svg"
           alt="VPS Lakeshore Hospital"
           style={{ height: 72, marginBottom: '2.5rem', filter: 'brightness(0) invert(1)' }}
         />
