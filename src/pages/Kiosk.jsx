@@ -198,9 +198,9 @@ export default function Kiosk() {
 
         {/* Logo tap target */}
         <img
-          src="/logo.svg"
+          src="/logo-light.svg"
           alt="VPS Lakeshore Hospital"
-          style={{ height: 88, filter: 'brightness(0) invert(1)', marginBottom: '1.5rem', cursor: 'default', marginTop: '3rem' }}
+          style={{ height: 88, marginBottom: '1.5rem', cursor: 'default', marginTop: '3rem' }}
           onClick={handleLogoTap}
         />
 

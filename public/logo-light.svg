@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 110" width="380" height="110">
+
+  <!-- "vps" lowercase bold white -->
+  <text x="10" y="68" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="52" fill="white">vps</text>
+
+  <!-- Maroon cross element overlaid on "p" -->
+  <rect x="45" y="37" width="24" height="9" rx="2" fill="#E84393"/>
+  <rect x="53" y="20" width="9" height="36" rx="2" fill="#E84393"/>
+
+  <!-- Vertical separator -->
+  <line x1="132" y1="22" x2="132" y2="82" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+  <!-- "lakeshore" bold white -->
+  <text x="144" y="68" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="52" fill="white">lakeshore</text>
+
+  <!-- "Medical Centre" subtitle in muted white -->
+  <text x="146" y="88" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="16" fill="rgba(255,255,255,0.6)" letter-spacing="0.5">Medical Centre</text>
+
+  <!-- Ribbon cross emblem — top right (blue + maroon, vivid against dark) -->
+  <!-- Top arm (blue) -->
+  <path d="M 348 12 Q 344 10 341 12 L 338 32 L 352 32 L 349 12 Q 348 10 348 12 Z" fill="#5BB8FF"/>
+  <!-- Right arm (blue) -->
+  <path d="M 352 28 L 374 30 Q 380 33 378 38 Q 376 43 370 42 L 352 40 Z" fill="#5BB8FF"/>
+
+  <!-- Bottom arm (maroon) -->
+  <path d="M 338 38 L 352 38 L 349 60 Q 347 65 344 65 Q 340 65 338 60 Z" fill="#E84393"/>
+  <!-- Left arm (maroon) -->
+  <path d="M 316 30 Q 313 26 316 22 Q 319 18 323 20 L 338 28 L 338 40 L 322 42 Q 315 42 316 36 Z" fill="#E84393"/>
+
+  <!-- Center overlap -->
+  <rect x="338" y="32" width="14" height="6" fill="#5BB8FF" opacity="0.8"/>
+  <rect x="338" y="38" width="14" height="2" fill="#E84393" opacity="0.6"/>
+
+</svg>

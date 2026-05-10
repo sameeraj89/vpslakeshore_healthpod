@@ -65,9 +65,9 @@ export default function Login() {
         }}
       >
         <img
-          src="/logo.svg"
+          src="/logo-light.svg"
           alt="VPS Lakeshore Hospital"
-          style={{ height: 72, marginBottom: '2.5rem', filter: 'brightness(0) invert(1)' }}
+          style={{ height: 72, marginBottom: '2.5rem' }}
         />
         <div style={{ textAlign: 'center', color: 'white' }}>
           <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}>HealthPod</h1>
