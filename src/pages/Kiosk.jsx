@@ -162,13 +162,13 @@ export default function Kiosk() {
         userSelect: 'none',
       }}>
         {/* Language toggle */}
-        <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem' }}>
           {['en', 'ml'].map(l => (
             <button key={l} onClick={() => setLang(l)} style={{
-              padding: '0.4rem 0.875rem', borderRadius: 6,
+              padding: '0.625rem 1rem', borderRadius: 8, minHeight: 44, minWidth: 48,
               background: lang === l ? 'white' : 'rgba(255,255,255,0.2)',
               color: lang === l ? '#1B75BC' : 'white',
-              border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+              border: 'none', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
             }}>{l === 'en' ? 'English' : 'മലയാളം'}</button>
           ))}
         </div>
@@ -308,7 +308,7 @@ export default function Kiosk() {
             <div style={{ display: 'flex', gap: '0.375rem' }}>
               {['en', 'ml'].map(l => (
                 <button key={l} onClick={() => setLang(l)} style={{
-                  padding: '0.25rem 0.6rem', borderRadius: 4, fontSize: '0.75rem',
+                  padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.8rem', minHeight: 44, minWidth: 44,
                   background: lang === l ? '#1B75BC' : '#e2e8f0',
                   color: lang === l ? 'white' : '#64748b',
                   border: 'none', fontWeight: 600, cursor: 'pointer',
