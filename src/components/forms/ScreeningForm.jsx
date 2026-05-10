@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../../lib/store'
+import { useT } from '../../lib/lang'
 import { useNavigate } from 'react-router-dom'
 import ImageUpload from './ImageUpload'
 import { getScreeningType } from '../../lib/screeningConfig'
@@ -12,6 +13,7 @@ function isActionableResult(result) {
 
 function ClinicalForm({ cfg, patient, existingData, onSaved }) {
   const { saveScreening, showToast } = useApp()
+  const { tr } = useT()
   const navigate = useNavigate()
 
   const [fields, setFields] = useState(() => {
@@ -77,7 +79,7 @@ function ClinicalForm({ cfg, patient, existingData, onSaved }) {
       if (isActionableResult(fields.result)) {
         setShowReferralPrompt(true)
       } else {
-        showToast(`${cfg.label} saved`)
+        showToast(`${tr(cfg.label)} saved`)
       }
     } catch (err) {
       showToast(err.message || 'Failed to save', 'error')
@@ -111,8 +113,8 @@ function ClinicalForm({ cfg, patient, existingData, onSaved }) {
       {/* Header */}
       <div style={{ background: `${cfg.color}0f`, borderBottom: `1px solid ${cfg.color}22`, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{cfg.icon} {cfg.label}</div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{cfg.method}</div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{cfg.icon} {tr(cfg.label)}</div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{tr(cfg.method)}</div>
         </div>
         {fields.result && (
           <span style={{
@@ -132,7 +134,7 @@ function ClinicalForm({ cfg, patient, existingData, onSaved }) {
         ))}
 
         {savedId && cfg.allowImages && (
-          <ImageUpload patient={patient} screeningId={savedId} label={`${cfg.label} — Clinical Image`} />
+          <ImageUpload patient={patient} screeningId={savedId} label={`${tr(cfg.label)} — Clinical Image`} />
         )}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -149,6 +151,7 @@ function ClinicalForm({ cfg, patient, existingData, onSaved }) {
 
 function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
   const { saveScreening, showToast } = useApp()
+  const { tr } = useT()
   const navigate = useNavigate()
 
   const [answers, setAnswers] = useState({})
@@ -173,7 +176,7 @@ function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
       const data = await saveScreening({
         patient_id: patient.id,
         cancer_type: cfg.key,
-        finding: `${cfg.label} — Score: ${score}/${cfg.maxScore}`,
+        finding: `${tr(cfg.label)} — Score: ${score}/${cfg.maxScore}`,
         result: interp.result,
         notes: JSON.stringify(answersMap),
         screened_at: new Date().toISOString(),
@@ -181,9 +184,9 @@ function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
       setResult(interp.result)
       onSaved?.(data)
       if (interp.flag) {
-        showToast(`${cfg.label} — positive screen. Consider referral.`, 'error')
+        showToast(`${tr(cfg.label)} — positive screen. Consider referral.`, 'error')
       } else {
-        showToast(`${cfg.label} saved`)
+        showToast(`${tr(cfg.label)} saved`)
       }
     } catch (err) {
       showToast(err.message || 'Failed to save', 'error')
@@ -195,11 +198,11 @@ function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
   const pct = cfg.maxScore > 0 ? (score / cfg.maxScore) * 100 : 0
   const interp = allAnswered ? cfg.scoreInterpretation(score, patient) : null
 
-  function renderQuestions(questions) {
+  function renderQuestions(questions, offset = 0) {
     return questions.map((q, qi) => (
       <div key={q.key} style={{ padding: '0.875rem', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
         <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: '#1e293b' }}>
-          {qi + 1}. {q.label}
+          {offset + qi + 1}. {q.label}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           {q.options.map(opt => {
@@ -227,8 +230,8 @@ function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
     <div style={{ border: `1.5px solid ${cfg.color}22`, borderRadius: '0.75rem', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ background: `${cfg.color}0f`, borderBottom: `1px solid ${cfg.color}22`, padding: '0.75rem 1rem' }}>
-        <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{cfg.icon} {cfg.label}</div>
-        <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>{cfg.method}</div>
+        <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{cfg.icon} {tr(cfg.label)}</div>
+        <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>{tr(cfg.method)}</div>
         {cfg.description && (
           <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: 4, background: 'white', padding: '0.3rem 0.6rem', borderRadius: 4, display: 'inline-block' }}>
             {cfg.description}
@@ -263,14 +266,22 @@ function QuestionnaireForm({ cfg, patient, existingData, onSaved }) {
         )}
 
         {/* Questions — sectioned for CBAC, flat otherwise */}
-        {hasSections ? sections.map(section => (
-          <div key={section}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{section}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {renderQuestions(cfg.questions.filter(q => q.section === section))}
-            </div>
-          </div>
-        )) : (
+        {hasSections ? (() => {
+          let offset = 0
+          return sections.map(section => {
+            const sectionQs = cfg.questions.filter(q => q.section === section)
+            const el = (
+              <div key={section}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{section}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {renderQuestions(sectionQs, offset)}
+                </div>
+              </div>
+            )
+            offset += sectionQs.length
+            return el
+          })
+        })() : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {renderQuestions(cfg.questions)}
           </div>
