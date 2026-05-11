@@ -99,7 +99,7 @@ export default function PatientDetail() {
   const tabs = [
     { key: 'risk',      label: tr(TX.patientDetail.tabRisk),      icon: Shield },
     { key: 'screenings', label: `${tr(TX.patientDetail.tabScreenings)}${screeningsDone > 0 ? ` (${screeningsDone})` : ''}`, icon: Activity },
-    { key: 'referral',  label: tr(TX.patientDetail.tabReferral),  icon: SendHorizonal },
+    ...(can(user, 'referrals') ? [{ key: 'referral', label: tr(TX.patientDetail.tabReferral), icon: SendHorizonal }] : []),
     ...(can(user, 'doctor_notes') ? [{ key: 'notes', label: tr(TX.patientDetail.tabNotes), icon: Stethoscope }] : []),
     { key: 'followup',  label: tr(TX.patientDetail.tabFollowup),  icon: CalendarClock },
   ]
