@@ -198,7 +198,6 @@ export default function RiskAssessment({ patient, onDone }) {
         diet: t(answers['nutrition_fruit_veg']?.label, 'en') || null,
         physical_activity: t(answers['physical_activity_exercise_freq']?.label, 'en') || null,
         bmi_category: t(answers['biometrics_bmi']?.label, 'en') || null,
-        diabetes: answers['biometrics_blood_sugar']?.points === 0,
         hypertension: answers['biometrics_blood_pressure']?.points === 0,
       })
       await updatePatient(patient.id, { risk_score: totalScore, risk_level: tierToRiskLevel(tier.level) })
@@ -422,7 +421,7 @@ export default function RiskAssessment({ patient, onDone }) {
           const selected = getAnswer(q.key)
           return (
             <div key={q.key} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '0.625rem', border: `1px solid ${selected ? '#1B75BC33' : '#e2e8f0'}`, transition: 'border-color 0.2s' }}>
-              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.75rem', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: q.hint ? '0.25rem' : '0.75rem', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <span>{qi + 1}. {t(q.label, lang)}</span>
                 {/* Per-question feedback + BT badge on selection */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
@@ -444,6 +443,11 @@ export default function RiskAssessment({ patient, onDone }) {
                   )}
                 </div>
               </div>
+              {q.hint && (
+                <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.625rem', fontStyle: 'italic' }}>
+                  {t(q.hint, lang)}
+                </div>
+              )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {q.options.map(opt => {
                   const isSelected = selected?.label === opt.label
