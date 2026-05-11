@@ -73,7 +73,8 @@ async function loadLogoDataUrl() {
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export async function generateScorecard(patient, score, tier, domainScores) {
+export async function generateScorecard(patientRaw, score, tier, domainScores) {
+  const patient = patientRaw || {}
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const W = 210, H = 297, pad = 14
   const tc = TIER_C[tier.level] || C.maroon
@@ -608,12 +609,13 @@ function addPageFooter(doc, W, H, pad) {
 
 // ── Comprehensive full report (all 5 sections) ─────────────────────────────
 export async function generateFullReport(
-  patient, score, tier, domainScores,
+  patientRaw, score, tier, domainScores,
   screenings,      // { [typeKey]: screeningRecord }
   referral,        // single referral record or null
   doctorNotes,     // array of note records
   followups,       // array of follow-up records
 ) {
+  const patient = patientRaw || {}
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const W = 210, H = 297, pad = 14
   const innerW = W - pad * 2
