@@ -52,7 +52,7 @@ export function AppProvider({ children }) {
   const saveRiskAssessment = useCallback(async (assessmentData) => {
     const { data, error } = await supabase
       .from('risk_assessments')
-      .upsert([assessmentData], { onConflict: 'patient_id' })
+      .upsert([coerceUUIDs(assessmentData)], { onConflict: 'patient_id' })
       .select()
       .single()
     if (error) throw error
