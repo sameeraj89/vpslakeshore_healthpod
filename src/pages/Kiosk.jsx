@@ -197,12 +197,27 @@ export default function Kiosk() {
         </div>
 
         {/* Logo tap target */}
-        <img
-          src="/logo-light.svg"
-          alt="VPS Lakeshore Hospital"
-          style={{ height: 88, marginBottom: '1.5rem', cursor: 'default', marginTop: '3rem' }}
+        <div
           onClick={handleLogoTap}
-        />
+          style={{
+            background: 'rgba(255,255,255,0.97)',
+            borderRadius: 14,
+            padding: '0.75rem 1.25rem',
+            marginBottom: '1.5rem',
+            marginTop: '3rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+            cursor: 'default',
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="VPS Lakeshore Hospital"
+            style={{ height: 56, width: 'auto', display: 'block' }}
+          />
+        </div>
 
         <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', fontWeight: 500, margin: '0 0 1.5rem', textAlign: 'center', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           {tr('programme')}
