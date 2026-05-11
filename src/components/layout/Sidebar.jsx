@@ -146,7 +146,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
           style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.375rem 0.75rem', marginBottom: 4, borderRadius: 6, border: '1px solid rgba(27,117,188,0.25)', background: 'rgba(27,117,188,0.06)', cursor: 'pointer', fontSize: '0.8rem', color: BLUE, fontWeight: 600 }}
         >
           <MonitorSmartphone size={14} />
-          {lang === 'ml' ? 'Kiosk Mode' : 'Kiosk Mode'}
+          Kiosk Mode
         </button>
 
         <button

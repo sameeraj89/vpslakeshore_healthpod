@@ -208,7 +208,7 @@ export default function RiskAssessment({ patient, onDone }) {
           score: totalScore,
           message: `Red-tier HRA: ${patient.name || 'Patient'} scored ${totalScore}/100`,
           resolved: false,
-        }).then(() => {})
+        }).then(({ error }) => { if (error) console.warn('staff_alerts insert:', error.message) })
       }
       showToast(lang === 'ml' ? 'റിസ്ക് അസസ്മെന്റ് സേവ് ചെയ്തു' : 'Risk assessment saved')
       setDone(true)
@@ -230,18 +230,6 @@ export default function RiskAssessment({ patient, onDone }) {
 
   return (
     <>
-      <style>{`
-        @keyframes floatUp {
-          0%   { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-18px); }
-        }
-        @keyframes pulseScore {
-          0%   { transform: scale(1); }
-          50%  { transform: scale(1.12); }
-          100% { transform: scale(1); }
-        }
-      `}</style>
-
       {/* Progress bar + domain chips */}
       <div style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -618,19 +606,6 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
 
   return (
     <div className="hp-scorecard" style={{ textAlign: 'center' }}>
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @media print {
-          body * { visibility: hidden; }
-          .hp-scorecard, .hp-scorecard * { visibility: visible; }
-          .hp-scorecard { position: fixed; inset: 0; padding: 2rem; background: white; }
-          .hp-print-hide { display: none !important; }
-        }
-      `}</style>
-
       {/* Animated SVG ring */}
       <div style={{ position: 'relative', display: 'inline-block', marginBottom: '0.75rem' }}>
         <svg width={148} height={148} viewBox="0 0 148 148">
@@ -686,7 +661,7 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
             const barColor = pct >= 0.7 ? '#10b981' : pct >= 0.4 ? '#f59e0b' : '#ef4444'
             return (
               <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', width: 20 }}>{'🏃🥗🚬😴💊📋'[i]}</span>
+                <span style={{ fontSize: '0.85rem', width: 20 }}>{DOMAIN_ICONS[i]}</span>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', flex: '0 0 130px', textAlign: 'left' }}>
                   {t(d.label, lang)}
                 </span>

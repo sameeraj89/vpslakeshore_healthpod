@@ -299,6 +299,20 @@ tr:hover td { background: rgba(43,124,190,0.02); }
 tr:last-child td { border-bottom: none; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-18px); } }
+@keyframes pulseScore { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes kiosk-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 0 rgba(255,255,255,0.45); }
+  50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 18px rgba(255,255,255,0); }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .hp-scorecard, .hp-scorecard * { visibility: visible; }
+  .hp-scorecard { position: fixed; inset: 0; padding: 2rem; background: white; }
+  .hp-print-hide { display: none !important; }
+}
 
 /* Hide left branding panel on small screens */
 @media (max-width: 640px) {

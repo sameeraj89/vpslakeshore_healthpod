@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../lib/store'
+import { useT } from '../lib/lang'
 import RiskAssessment from '../components/forms/RiskAssessment'
 
 const IDLE_MS = 3 * 60 * 1000   // reset to welcome after 3 min idle
@@ -35,9 +36,9 @@ function useIdleReset(onIdle, active) {
 export default function Kiosk() {
   const navigate = useNavigate()
   const { saveRiskAssessment, updatePatient, showToast } = useApp()
+  const { lang, setLang } = useT()
 
   const [screen, setScreen] = useState('welcome')  // welcome | identify | hra
-  const [lang, setLang] = useState('en')
   const [patient, setPatient] = useState(null)
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -175,13 +176,6 @@ export default function Kiosk() {
         padding: '2rem',
         userSelect: 'none',
       }}>
-        <style>{`
-          @keyframes kiosk-pulse {
-            0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 0 rgba(255,255,255,0.45); }
-            50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 18px rgba(255,255,255,0); }
-          }
-        `}</style>
-
         {/* Language toggle — prominent, top-centre */}
         <div style={{ position: 'absolute', top: '1.25rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.5rem' }}>
           {['en', 'ml'].map(l => (

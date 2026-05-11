@@ -5,7 +5,7 @@ const LangContext = createContext(null)
 export function LangProvider({ children }) {
   const [lang, setLang] = useState('en')
   const toggle = () => setLang(l => l === 'en' ? 'ml' : 'en')
-  return <LangContext.Provider value={{ lang, toggle }}>{children}</LangContext.Provider>
+  return <LangContext.Provider value={{ lang, setLang, toggle }}>{children}</LangContext.Provider>
 }
 
 export const useLang = () => useContext(LangContext)
@@ -17,8 +17,8 @@ export function t(obj, lang) {
   return obj[lang] || obj.en || ''
 }
 
-// useT() — convenience hook; returns { lang, tr } where tr(obj) = t(obj, lang)
+// useT() — convenience hook; returns { lang, setLang, toggle, tr }
 export function useT() {
-  const { lang, toggle } = useContext(LangContext)
-  return { lang, toggle, tr: (obj) => t(obj, lang) }
+  const { lang, setLang, toggle } = useContext(LangContext)
+  return { lang, setLang, toggle, tr: (obj) => t(obj, lang) }
 }
