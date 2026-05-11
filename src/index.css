@@ -305,6 +305,14 @@ tr:last-child td { border-bottom: none; }
   .login-brand-panel { display: none !important; }
 }
 
+/* mobile-only-logo: visible only when left brand panel is hidden */
+.mobile-only-logo { display: none !important; }
+.mobile-only-tagline { display: none !important; }
+@media (max-width: 640px) {
+  .mobile-only-logo { display: block !important; }
+  .mobile-only-tagline { display: block !important; }
+}
+
 /* Mobile layout */
 .mobile-header { display: none; }
 

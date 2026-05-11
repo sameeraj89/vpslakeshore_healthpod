@@ -7,6 +7,7 @@ import { useT } from '../../lib/lang'
 import TX from '../../lib/translations'
 import { queueCount, syncQueue, isOnline } from '../../lib/offlineQueue'
 import { canAccess } from '../../lib/roles'
+import { BLUE, BRAND_GRADIENT } from '../../lib/brand'
 
 export default function Sidebar({ mobileOpen, onClose }) {
   const { pathname } = useLocation()
@@ -76,7 +77,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
         <img src="/logo.png" alt="VPS Lakeshore Hospital" style={{ height: 44, width: 'auto', display: 'block' }} />
         <div style={{
           marginTop: '0.625rem',
-          background: 'linear-gradient(90deg, #1B75BC, #A6215A)',
+          background: BRAND_GRADIENT,
           borderRadius: 6,
           padding: '0.3rem 0.625rem',
           display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
@@ -130,7 +131,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
           <button
             onClick={handleSync}
             disabled={!online || syncing}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.375rem 0.75rem', marginBottom: 4, background: 'rgba(43,124,190,0.08)', border: '1px solid rgba(43,124,190,0.2)', borderRadius: 6, cursor: online ? 'pointer' : 'default', fontSize: '0.78rem', color: '#1B75BC' }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.375rem 0.75rem', marginBottom: 4, background: 'rgba(43,124,190,0.08)', border: '1px solid rgba(43,124,190,0.2)', borderRadius: 6, cursor: online ? 'pointer' : 'default', fontSize: '0.78rem', color: BLUE }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <RefreshCw size={12} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
@@ -142,7 +143,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
 
         <button
           onClick={() => { navigate('/kiosk'); onClose?.() }}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.375rem 0.75rem', marginBottom: 4, borderRadius: 6, border: '1px solid rgba(27,117,188,0.25)', background: 'rgba(27,117,188,0.06)', cursor: 'pointer', fontSize: '0.8rem', color: '#1B75BC', fontWeight: 600 }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.375rem 0.75rem', marginBottom: 4, borderRadius: 6, border: '1px solid rgba(27,117,188,0.25)', background: 'rgba(27,117,188,0.06)', cursor: 'pointer', fontSize: '0.8rem', color: BLUE, fontWeight: 600 }}
         >
           <MonitorSmartphone size={14} />
           {lang === 'ml' ? 'Kiosk Mode' : 'Kiosk Mode'}

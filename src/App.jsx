@@ -19,12 +19,13 @@ import HealthPods from './pages/HealthPods'
 import Campaigns from './pages/Campaigns'
 import Kiosk from './pages/Kiosk'
 import { canAccess } from './lib/roles'
+import { BRAND_GRADIENT } from './lib/brand'
 
 function SetupScreen() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '1rem' }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-        <div style={{ width: 60, height: 60, borderRadius: 14, background: 'linear-gradient(135deg, #1B75BC, #A6215A)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+        <div style={{ width: 60, height: 60, borderRadius: 14, background: BRAND_GRADIENT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
           <span style={{ color: 'white', fontWeight: 800, fontSize: 22 }}>H</span>
         </div>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', margin: '0 0 0.5rem' }}>HealthPod needs setup</h1>
@@ -65,7 +66,7 @@ function AppRoutes() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg, #1B75BC, #A6215A)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: BRAND_GRADIENT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
             <span style={{ color: 'white', fontWeight: 800, fontSize: 18 }}>H</span>
           </div>
           <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Loading HealthPod…</div>

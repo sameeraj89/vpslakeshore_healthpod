@@ -1,5 +1,6 @@
 // 100-point NCD Risk Assessment — adapted from WHO STEPS, calibrated for Kerala
 // Higher score = BETTER health (inverse of old scoring)
+import { MAROON } from './brand'
 
 export const DOMAINS = [
   {
@@ -249,7 +250,7 @@ export const SCORE_TIERS = [
   { min: 80, max: 100, level: 'green',  label: { en: 'Thriving', ml: 'ആരോഗ്യകരം' },    color: '#10b981', bg: 'rgba(16,185,129,0.1)',  border: '#10b981', voucher: '10%', message: { en: 'Excellent health habits. Keep it up and get your annual wellness check.', ml: 'മികച്ച ആരോഗ്യ ശീലങ്ങൾ. തുടരൂ!' } },
   { min: 60, max: 79,  level: 'amber',  label: { en: 'Watchful', ml: 'ശ്രദ്ധിക്കണം' },   color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: '#f59e0b', voucher: '15%', message: { en: 'Some areas need attention. A preventive panel and lifestyle counselling is advised.', ml: 'ചില മേഖലകൾ ശ്രദ്ധ ആവശ്യപ്പെടുന്നു.' } },
   { min: 40, max: 59,  level: 'orange', label: { en: 'At Risk', ml: 'അപകടസാധ്യത' },      color: '#f97316', bg: 'rgba(249,115,22,0.1)',  border: '#f97316', voucher: '20%', message: { en: 'Your score indicates risk. Please consult a specialist within 4 weeks.', ml: 'നിങ്ങളുടെ സ്കോർ അപകടസൂചന നൽകുന്നു.' } },
-  { min: 0,  max: 39,  level: 'red',    label: { en: 'Act Now', ml: 'ഉടൻ നടപടി' },       color: '#A6215A', bg: 'rgba(139,26,74,0.1)',  border: '#A6215A', voucher: '25%', message: { en: 'Immediate attention needed. A nurse counsellor will speak with you today.', ml: 'ഉടനടി ശ്രദ്ധ ആവശ്യം. ഇന്ന് നഴ്സ് കൗൺസെലർ സംസാരിക്കും.' } },
+  { min: 0,  max: 39,  level: 'red',    label: { en: 'Act Now', ml: 'ഉടൻ നടപടി' },       color: MAROON,    bg: 'rgba(139,26,74,0.1)',  border: MAROON,    voucher: '25%', message: { en: 'Immediate attention needed. A nurse counsellor will speak with you today.', ml: 'ഉടനടി ശ്രദ്ധ ആവശ്യം. ഇന്ന് നഴ്സ് കൗൺസെലർ സംസാരിക്കും.' } },
 ]
 
 export function getTier(score) {

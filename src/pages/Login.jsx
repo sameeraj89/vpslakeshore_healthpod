@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../lib/store'
 import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { BLUE, BRAND_GRADIENT } from '../lib/brand'
 
 export default function Login() {
   const { setUser } = useApp()
@@ -50,7 +51,7 @@ export default function Login() {
         className="login-brand-panel"
         style={{
           flex: 1,
-          background: 'linear-gradient(160deg, #1B75BC 0%, #145e9a 55%, #A6215A 100%)',
+          background: BRAND_GRADIENT,
           display: 'flex', flexDirection: 'column',
           justifyContent: 'center', alignItems: 'center',
           padding: '3rem', minWidth: 0,
@@ -84,7 +85,10 @@ export default function Login() {
         {mode === 'login' ? (
           <>
             <div style={{ marginBottom: '2rem' }}>
-              <img src="/logo.svg" alt="VPS Lakeshore" style={{ height: 36, marginBottom: '1.5rem', display: 'block' }} className="mobile-only-logo" />
+              <img src="/logo.svg" alt="VPS Lakeshore" style={{ height: 36, marginBottom: '0.5rem', display: 'block' }} className="mobile-only-logo" />
+              <p className="mobile-only-tagline" style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 600, fontStyle: 'italic', color: BLUE, letterSpacing: '0.01em' }}>
+                Your Health. Revealed. Rewarded. In 10 min.
+              </p>
               <h2 style={{ margin: '0 0 0.375rem', fontSize: '1.35rem', fontWeight: 700, color: '#0d1b2a' }}>Welcome back</h2>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem' }}>Sign in to access the HealthPod programme</p>
             </div>
@@ -125,7 +129,7 @@ export default function Login() {
             </form>
 
             <button onClick={() => { setMode('reset'); setError(''); setResetSent(false) }}
-              style={{ marginTop: '1rem', background: 'none', border: 'none', color: '#1B75BC', fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+              style={{ marginTop: '1rem', background: 'none', border: 'none', color: BLUE, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
               Forgot password?
             </button>
 
