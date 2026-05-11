@@ -572,12 +572,12 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
   function handleShare(channel) {
     const tierLabel = t(tier.label, lang)
     const msg = lang === 'ml'
-      ? `🏥 HealthPod ആരോഗ്യ സ്കോർ: ${score}/100 — ${tierLabel}\n\nപ്രിയ ${patient.name || 'രോഗി'},\nVPS Lakeshore HealthPod-ൽ നിന്നുള്ള നിങ്ങളുടെ NCD ഹെൽത്ത് റിസ്ക് സ്കോർകാർഡ്.\n\n💊 വെൽനസ് വൗച്ചർ: ${tier.voucher} OFF\nകോഡ്: ${voucherCode}\n\nകൂടുതൽ സ്ക്രീനിംഗിനായി VPS Lakeshore Hospital-ൽ ബന്ധപ്പെടുക.\nTel: +91-484-2701000`
-      : `🏥 HealthPod Health Score: ${score}/100 — ${tierLabel}\n\nDear ${patient.name || 'Patient'},\nYour NCD Health Risk Scorecard from VPS Lakeshore HealthPod.\n\n💊 Wellness Voucher: ${tier.voucher} OFF on wellness package\nCode: ${voucherCode}\n\nFor appointments & follow-up:\nVPS Lakeshore Hospital, Kochi\nTel: +91-484-2701000`
+      ? `🏥 HealthPod ആരോഗ്യ സ്കോർ: ${score}/100 — ${tierLabel}\n\nപ്രിയ ${patient?.name || 'രോഗി'},\nVPS Lakeshore HealthPod-ൽ നിന്നുള്ള നിങ്ങളുടെ NCD ഹെൽത്ത് റിസ്ക് സ്കോർകാർഡ്.\n\n💊 വെൽനസ് വൗച്ചർ: ${tier.voucher} OFF\nകോഡ്: ${voucherCode}\n\nകൂടുതൽ സ്ക്രീനിംഗിനായി VPS Lakeshore Hospital-ൽ ബന്ധപ്പെടുക.\nTel: +91-484-2701000`
+      : `🏥 HealthPod Health Score: ${score}/100 — ${tierLabel}\n\nDear ${patient?.name || 'Patient'},\nYour NCD Health Risk Scorecard from VPS Lakeshore HealthPod.\n\n💊 Wellness Voucher: ${tier.voucher} OFF on wellness package\nCode: ${voucherCode}\n\nFor appointments & follow-up:\nVPS Lakeshore Hospital, Kochi\nTel: +91-484-2701000`
 
     if (channel === 'whatsapp') {
       // Pre-fill patient's phone if available; normalise to +91 10-digit
-      const raw = (patient.phone || '').replace(/\D/g, '').replace(/^0+/, '')
+      const raw = (patient?.phone || '').replace(/\D/g, '').replace(/^0+/, '')
       const phone = raw.length === 10 ? `91${raw}` : raw.length === 12 && raw.startsWith('91') ? raw : ''
       const waUrl = phone
         ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
@@ -585,10 +585,10 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
       window.open(waUrl, '_blank')
     } else if (channel === 'email') {
       const sub = lang === 'ml'
-        ? `HealthPod ഹെൽത്ത് സ്കോർകാർഡ് — ${patient.name || ''}`
-        : `HealthPod Health Scorecard — ${patient.name || ''} (${score}/100)`
+        ? `HealthPod ഹെൽത്ത് സ്കോർകാർഡ് — ${patient?.name || ''}`
+        : `HealthPod Health Scorecard — ${patient?.name || ''} (${score}/100)`
       // Pre-fill patient email if present on the record
-      const to = patient.email ? encodeURIComponent(patient.email) : ''
+      const to = patient?.email ? encodeURIComponent(patient.email) : ''
       window.location.href = `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(msg)}`
     }
   }
