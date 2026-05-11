@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useApp } from '../../lib/store'
 import { Camera, Upload, X, Image } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { coerceUUIDs } from '../../lib/utils'
 
 export default function ImageUpload({ patient, screeningId, label }) {
   const { uploadImage, showToast } = useApp()
@@ -27,12 +28,12 @@ export default function ImageUpload({ patient, screeningId, label }) {
       }
       try {
         const path = await uploadImage(file, patient.id)
-        await supabase.from('screening_images').insert({
+        await supabase.from('screening_images').insert(coerceUUIDs({
           patient_id: patient.id,
           screening_id: screeningId,
           file_path: path,
           file_name: file.name,
-        })
+        }))
         const url = URL.createObjectURL(file)
         setImages(prev => [...prev, { url, name: file.name, path }])
         showToast('Image uploaded')

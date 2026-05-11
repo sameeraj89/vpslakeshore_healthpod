@@ -52,9 +52,18 @@ function AppRoutes() {
   if (!supabaseConfigured) return <SetupScreen />
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    // Always refresh the session on load so user_metadata (role) reflects
+    // the latest DB state — getSession() alone returns a cached JWT that
+    // won't include role changes made via SQL until the token is refreshed.
+    supabase.auth.refreshSession().then(({ data }) => {
       setUser(data.session?.user || null)
       setChecking(false)
+    }).catch(() => {
+      // Fall back to cached session if refresh fails (e.g. offline)
+      supabase.auth.getSession().then(({ data }) => {
+        setUser(data.session?.user || null)
+        setChecking(false)
+      })
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../lib/store'
-import { formatDate, getRiskLabel } from '../lib/utils'
+import { formatDate, getRiskLabel, coerceUUIDs } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 import RiskAssessment from '../components/forms/RiskAssessment'
 import ScreeningForm from '../components/forms/ScreeningForm'
@@ -319,13 +319,13 @@ function ReferralForm({ patient }) {
   async function handleSave() {
     setSaving(true)
     try {
-      await supabase.from('referrals').insert({
+      await supabase.from('referrals').insert(coerceUUIDs({
         patient_id: patient.id,
         department,
         reason,
         priority,
         notes,
-      })
+      }))
       await updatePatient(patient.id, { referred: true, referral_notes: reason })
       showToast('Referral saved')
     } catch (err) {
@@ -408,7 +408,7 @@ function DoctorNotesForm({ patient }) {
     }
     setSaving(true)
     try {
-      const payload = { patient_id: patient.id, doctor_name: doctorName, clinical_assessment: assessment, diagnosis, treatment_plan: plan, followup_date: followupDate || null }
+      const payload = coerceUUIDs({ patient_id: patient.id, doctor_name: doctorName, clinical_assessment: assessment, diagnosis, treatment_plan: plan, followup_date: followupDate || null })
       const { data, error } = await supabase.from('doctor_notes').insert(payload).select().single()
       if (error) throw error
       setNotes(prev => [data, ...prev])
@@ -498,7 +498,7 @@ function FollowUpForm({ patient }) {
     if (!date) { showToast('Please set a follow-up date', 'error'); return }
     setSaving(true)
     try {
-      const { data, error } = await supabase.from('follow_ups').insert({ patient_id: patient.id, followup_date: date, reason, assigned_to: assignedTo, status: 'scheduled' }).select().single()
+      const { data, error } = await supabase.from('follow_ups').insert(coerceUUIDs({ patient_id: patient.id, followup_date: date, reason, assigned_to: assignedTo, status: 'scheduled' })).select().single()
       if (error) throw error
       setFollowups(prev => [...prev, data].sort((a, b) => a.followup_date.localeCompare(b.followup_date)))
       setDate(''); setReason(''); setAssignedTo('')

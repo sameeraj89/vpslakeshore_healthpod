@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useApp } from '../../lib/store'
 import { useLang, t } from '../../lib/lang'
 import { DOMAINS, getTier, generateVoucherCode, tierToRiskLevel } from '../../lib/riskConfig'
+import { coerceUUIDs } from '../../lib/utils'
 import { generateScorecard } from '../../lib/generatePDF'
 import { ShieldCheck, ChevronRight, ChevronLeft, Download, Printer, Share2, Bluetooth, BluetoothConnected, BluetoothOff } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
@@ -202,13 +203,13 @@ export default function RiskAssessment({ patient, onDone }) {
       })
       await updatePatient(patient.id, { risk_score: totalScore, risk_level: tierToRiskLevel(tier.level) })
       if (tier.level === 'red') {
-        supabase.from('staff_alerts').insert({
+        supabase.from('staff_alerts').insert(coerceUUIDs({
           patient_id: patient.id,
           alert_type: 'red_tier_hra',
           score: totalScore,
           message: `Red-tier HRA: ${patient.name || 'Patient'} scored ${totalScore}/100`,
           resolved: false,
-        }).then(({ error }) => { if (error) console.warn('staff_alerts insert:', error.message) })
+        })).then(({ error }) => { if (error) console.warn('staff_alerts insert:', error.message) })
       }
       showToast(lang === 'ml' ? 'റിസ്ക് അസസ്മെന്റ് സേവ് ചെയ്തു' : 'Risk assessment saved')
       setDone(true)
