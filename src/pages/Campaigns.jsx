@@ -88,11 +88,13 @@ export default function Campaigns() {
       }
 
       // sync pod assignments
-      await supabase.from('campaign_healthpods').delete().eq('campaign_id', campaignId)
+      const { error: delError } = await supabase.from('campaign_healthpods').delete().eq('campaign_id', campaignId)
+      if (delError) throw delError
       if (selectedPods.length > 0) {
-        await supabase.from('campaign_healthpods').insert(
+        const { error: podError } = await supabase.from('campaign_healthpods').insert(
           selectedPods.map(pid => ({ campaign_id: campaignId, healthpod_id: pid }))
         )
+        if (podError) throw podError
       }
 
       showToast(editId ? 'Campaign updated' : 'Campaign created')

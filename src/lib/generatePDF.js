@@ -100,14 +100,14 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
     doc.setTextColor(...C.blue)
     doc.text(' Lakeshore', pad + 12, y + 10)
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal')
-    doc.text('Medical Centre', pad + 12, y + 15)
+    doc.text('Hospital', pad + 12, y + 15)
   }
 
   // Hospital address sub-line
   doc.setTextColor(...C.mutedText)
   doc.setFontSize(6.2)
   doc.setFont('helvetica', 'normal')
-  doc.text('Global Lifecare · Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 23)
+  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 23)
   doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 27.5)
 
   // Right info panel
@@ -563,7 +563,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setTextColor(...C.white)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text('VPS Lakeshore Hospital · Global Lifecare', W / 2, H - 9.5, { align: 'center' })
+  doc.text('VPS Lakeshore Hospital · HealthPod Programme', W / 2, H - 9.5, { align: 'center' })
   doc.setFontSize(6)
   doc.setFont('helvetica', 'normal')
   doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040  ·  Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', W / 2, H - 5.5, { align: 'center' })
@@ -642,7 +642,7 @@ export async function generateFullReport(
   doc.setTextColor(...C.mutedText)
   doc.setFontSize(6.2)
   doc.setFont('helvetica', 'normal')
-  doc.text('Global Lifecare · Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 22)
+  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 22)
   doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 26.5)
 
   // Right report info panel

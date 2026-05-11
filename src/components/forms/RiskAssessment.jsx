@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useApp } from '../../lib/store'
 import { useLang, t } from '../../lib/lang'
-import { DOMAINS, getTier, generateVoucherCode } from '../../lib/riskConfig'
+import { DOMAINS, getTier, generateVoucherCode, tierToRiskLevel } from '../../lib/riskConfig'
 import { generateScorecard } from '../../lib/generatePDF'
 import { ShieldCheck, ChevronRight, ChevronLeft, Download, Printer, Share2, Bluetooth, BluetoothConnected, BluetoothOff } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
@@ -200,7 +200,7 @@ export default function RiskAssessment({ patient, onDone }) {
         diabetes: answers['biometrics_blood_sugar']?.points === 0,
         hypertension: answers['biometrics_blood_pressure']?.points === 0,
       })
-      await updatePatient(patient.id, { risk_score: totalScore, risk_level: tier.level })
+      await updatePatient(patient.id, { risk_score: totalScore, risk_level: tierToRiskLevel(tier.level) })
       if (tier.level === 'red') {
         supabase.from('staff_alerts').insert({
           patient_id: patient.id,

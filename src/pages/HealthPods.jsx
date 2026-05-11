@@ -74,7 +74,8 @@ export default function HealthPods() {
   }
 
   async function toggleActive(pod) {
-    await supabase.from('healthpods').update({ active: !pod.active }).eq('id', pod.id)
+    const { error } = await supabase.from('healthpods').update({ active: !pod.active }).eq('id', pod.id)
+    if (error) { showToast('Failed to update: ' + error.message, 'error'); return }
     load()
   }
 

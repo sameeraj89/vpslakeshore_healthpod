@@ -1,31 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 130" width="560" height="130">
 
-  <!-- "vps" lowercase bold maroon — matches actual logo -->
-  <text x="10" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="64" fill="#C8103E">vps</text>
+  <!-- "vps" lowercase bold maroon — brand color #A6215A -->
+  <text x="10" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="64" fill="#A6215A">vps</text>
 
   <!-- Vertical separator -->
   <line x1="128" y1="16" x2="128" y2="96" stroke="#C5CDD5" stroke-width="1.5"/>
 
-  <!-- "Lakeshore" title-case bold blue — matches actual logo -->
-  <text x="142" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="64" fill="#0072BC">Lakeshore</text>
+  <!-- "Lakeshore" title-case bold blue — brand color #1B75BC -->
+  <text x="142" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="64" fill="#1B75BC">Lakeshore</text>
 
-  <!-- "Medical Centre" subtitle — blue, regular weight, left-aligned -->
-  <text x="144" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="20" fill="#0072BC" letter-spacing="0.8">Medical Centre</text>
+  <!-- "Hospital" subtitle — blue, regular weight, left-aligned -->
+  <text x="144" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="20" fill="#1B75BC" letter-spacing="0.8">Hospital</text>
 
   <!-- Ribbon cross emblem — top right, rotated ~15° clockwise -->
   <!-- Structure: blue = top arm + right arm; maroon = bottom arm + left arm -->
   <g transform="translate(524, 65) rotate(15)">
     <!-- Blue top arm (vertical, above centre) -->
-    <rect x="-12" y="-48" width="24" height="50" rx="7" ry="7" fill="#0072BC"/>
+    <rect x="-12" y="-48" width="24" height="50" rx="7" ry="7" fill="#1B75BC"/>
     <!-- Blue right arm (horizontal, right of centre) -->
-    <rect x="0" y="-12" width="50" height="24" rx="7" ry="7" fill="#0072BC"/>
+    <rect x="0" y="-12" width="50" height="24" rx="7" ry="7" fill="#1B75BC"/>
     <!-- Maroon bottom arm (vertical, below centre) -->
-    <rect x="-12" y="0" width="24" height="48" rx="7" ry="7" fill="#C8103E"/>
+    <rect x="-12" y="0" width="24" height="48" rx="7" ry="7" fill="#A6215A"/>
     <!-- Maroon left arm (horizontal, left of centre) -->
-    <rect x="-56" y="-12" width="50" height="24" rx="7" ry="7" fill="#C8103E"/>
+    <rect x="-56" y="-12" width="50" height="24" rx="7" ry="7" fill="#A6215A"/>
     <!-- Clean centre seam -->
-    <rect x="-12" y="-12" width="12" height="12" fill="#C8103E"/>
-    <rect x="0" y="0" width="12" height="12" fill="#0072BC"/>
+    <rect x="-12" y="-12" width="12" height="12" fill="#A6215A"/>
+    <rect x="0" y="0" width="12" height="12" fill="#1B75BC"/>
   </g>
 
 </svg>

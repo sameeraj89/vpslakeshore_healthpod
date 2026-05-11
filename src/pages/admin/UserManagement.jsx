@@ -49,12 +49,13 @@ export default function UserManagement() {
       if (error) throw error
 
       // create profile record
-      await supabase.from('staff_profiles').insert({
+      const { error: profileError } = await supabase.from('staff_profiles').insert({
         user_id: data.user?.id,
         email: form.email,
         name: form.name,
         role: form.role,
       })
+      if (profileError) throw profileError
 
       showToast(`Account created for ${form.email}`)
       setForm({ email: '', password: '', name: '', role: 'data_entry' })
@@ -69,7 +70,8 @@ export default function UserManagement() {
 
   async function handleDeactivate(profile) {
     if (!window.confirm(`Deactivate ${profile.email}?`)) return
-    await supabase.from('staff_profiles').update({ active: false }).eq('id', profile.id)
+    const { error } = await supabase.from('staff_profiles').update({ active: false }).eq('id', profile.id)
+    if (error) { showToast('Failed to deactivate: ' + error.message, 'error'); return }
     showToast(`${profile.email} deactivated`)
     loadUsers()
   }

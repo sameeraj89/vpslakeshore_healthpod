@@ -8,9 +8,9 @@ import ScreeningForm from '../components/forms/ScreeningForm'
 import { SCREENING_TYPES, SCREENING_CATEGORIES } from '../lib/screeningConfig'
 import { useT } from '../lib/lang'
 import TX from '../lib/translations'
-import { ArrowLeft, User, Phone, MapPin, Shield, Activity, SendHorizonal, FileText, Stethoscope, CalendarClock, Printer, ChevronDown, ChevronUp, FileDown } from 'lucide-react'
-import { can } from '../lib/roles'
-import { getTier } from '../lib/riskConfig'
+import { ArrowLeft, User, Phone, MapPin, Shield, Activity, SendHorizonal, FileText, Stethoscope, CalendarClock, Printer, ChevronDown, ChevronUp, FileDown, Trash2 } from 'lucide-react'
+import { can, isAdmin } from '../lib/roles'
+import { getTier, tierToRiskLevel } from '../lib/riskConfig'
 import { generateFullReport } from '../lib/generatePDF'
 
 export default function PatientDetail() {
@@ -18,7 +18,7 @@ export default function PatientDetail() {
   const navigate = useNavigate()
   const location = useLocation()
   const { tr } = useT()
-  const { patients, screenings, fetchPatients, fetchScreenings, user } = useApp()
+  const { patients, user } = useApp()
   const [patient, setPatient] = useState(null)
   const [patientScreenings, setPatientScreenings] = useState({})
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'risk')
@@ -26,6 +26,17 @@ export default function PatientDetail() {
   const [referralOpen, setReferralOpen] = useState(false)
   const [domainScores, setDomainScores] = useState(null)
   const [reportLoading, setReportLoading] = useState(false)
+
+  async function handleDelete() {
+    if (!window.confirm(`Permanently delete ${patient.name} (${patient.uhid})? This cannot be undone.`)) return
+    try {
+      const { error } = await supabase.from('patients').delete().eq('id', patient.id)
+      if (error) throw error
+      navigate('/patients', { replace: true })
+    } catch (err) {
+      alert('Delete failed: ' + err.message)
+    }
+  }
 
   async function handleFullReport() {
     setReportLoading(true)
@@ -53,6 +64,7 @@ export default function PatientDetail() {
   }
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
       setLoading(true)
       let p = patients.find(x => x.id === id)
@@ -60,9 +72,11 @@ export default function PatientDetail() {
         const { data } = await supabase.from('patients').select('*').eq('id', id).single()
         p = data
       }
+      if (cancelled) return
       setPatient(p)
 
       const { data: scs } = await supabase.from('screenings').select('*').eq('patient_id', id)
+      if (cancelled) return
       if (scs) {
         const byType = {}
         scs.forEach(s => { byType[s.cancer_type] = s })
@@ -71,6 +85,7 @@ export default function PatientDetail() {
       setLoading(false)
     }
     load()
+    return () => { cancelled = true }
   }, [id])
 
   if (loading) return <div style={{ padding: '2rem', color: '#64748b' }}>{tr(TX.patientDetail.loading)}</div>
@@ -108,6 +123,14 @@ export default function PatientDetail() {
           <button className="btn-ghost" onClick={() => navigate(`/patients/${id}/summary`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}>
             <Printer size={14} /> {tr(TX.common.printSummary)}
           </button>
+          {isAdmin(user) && (
+            <button
+              onClick={handleDelete}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', padding: '0.45rem 0.875rem', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+            >
+              <Trash2 size={14} /> Delete Patient
+            </button>
+          )}
         </div>
       </div>
 
@@ -175,7 +198,7 @@ export default function PatientDetail() {
       <div className="card">
         {activeTab === 'risk' && (
           <RiskAssessment patient={patient} onDone={({ score, tier, domainScores: ds }) => {
-            setPatient(p => ({ ...p, risk_score: score, risk_level: tier.level }))
+            setPatient(p => ({ ...p, risk_score: score, risk_level: tierToRiskLevel(tier.level) }))
             if (ds) setDomainScores(ds)
           }} />
         )}

@@ -257,6 +257,14 @@ export function getTier(score) {
   return SCORE_TIERS.find(t => score >= t.min && score <= t.max) || SCORE_TIERS[3]
 }
 
+// Maps 4-tier level ('green'/'amber'/'orange'/'red') to the 3-level DB field
+// ('low'/'medium'/'high') used by Patients, Dashboard, and PatientDetail.
+export function tierToRiskLevel(tierLevel) {
+  if (tierLevel === 'green') return 'low'
+  if (tierLevel === 'amber') return 'medium'
+  return 'high'
+}
+
 // Stable voucher code: HP-{TierInitial}{Score}-{UHID}-{YYMMDD}
 // Single source of truth — used by both ScoreCard and generatePDF
 export function generateVoucherCode(patient, score, tier) {

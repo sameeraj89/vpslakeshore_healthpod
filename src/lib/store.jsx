@@ -35,7 +35,10 @@ export function AppProvider({ children }) {
   }, [])
 
   const savePatient = useCallback(async (patientData) => {
-    const { data, error } = await supabase.from('patients').insert([patientData]).select().single()
+    const UUID_COLS = ['healthpod_id', 'campaign_id', 'created_by']
+    const safe = { ...patientData }
+    for (const col of UUID_COLS) { if (safe[col] === '' || safe[col] === undefined) safe[col] = null }
+    const { data, error } = await supabase.from('patients').insert([safe]).select().single()
     if (error) throw error
     setPatients(prev => [data, ...prev])
     return data
@@ -49,24 +52,9 @@ export function AppProvider({ children }) {
   }, [])
 
   const saveRiskAssessment = useCallback(async (assessmentData) => {
-    const { data: existing } = await supabase
-      .from('risk_assessments')
-      .select('id')
-      .eq('patient_id', assessmentData.patient_id)
-      .maybeSingle()
-    if (existing) {
-      const { data, error } = await supabase
-        .from('risk_assessments')
-        .update(assessmentData)
-        .eq('id', existing.id)
-        .select()
-        .single()
-      if (error) throw error
-      return data
-    }
     const { data, error } = await supabase
       .from('risk_assessments')
-      .insert([assessmentData])
+      .upsert([assessmentData], { onConflict: 'patient_id' })
       .select()
       .single()
     if (error) throw error

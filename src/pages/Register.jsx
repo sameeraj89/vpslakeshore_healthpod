@@ -66,7 +66,7 @@ export default function Register() {
   }, [])
 
   const [form, setForm] = useState({
-    name: '', dob: '', gender: '', phone: '', phone2: '', email: '',
+    name: '', dob: '', gender: '', phone: '', phone2: '',
     address: '', district: 'Ernakulam', occupation: '', education: '',
     marital_status: '', insurance: '', healthpod_id: '', campaign_id: '', referred_by: '',
     tobacco_use: '', alcohol_use: '',
@@ -141,8 +141,25 @@ export default function Register() {
     try {
       const uhid = generateUHID()
       const patientData = {
-        ...form,
+        name: form.name,
         dob: form.dob || null,
+        gender: form.gender,
+        phone: form.phone,
+        phone2: form.phone2,
+        address: form.address,
+        district: form.district,
+        occupation: form.occupation,
+        education: form.education,
+        marital_status: form.marital_status,
+        insurance: form.insurance,
+        healthpod_id: form.healthpod_id || null,
+        campaign_id: form.campaign_id || null,
+        referred_by: form.referred_by,
+        tobacco_use: form.tobacco_use,
+        alcohol_use: form.alcohol_use,
+        aadhaar_last4: form.aadhaar_last4,
+        abha_number: form.abha_number,
+        abha_address: form.abha_address,
         uhid,
         age: age || null,
         risk_score: 0,
@@ -241,9 +258,6 @@ export default function Register() {
           </Field>
           <Field label={tr(TX.register.altPhone)}>
             <input className="form-input" type="tel" value={form.phone2} onChange={e => set('phone2', e.target.value)} placeholder={tr(TX.register.optional)} />
-          </Field>
-          <Field label="Email address">
-            <input className="form-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="patient@example.com (optional)" />
           </Field>
           <Field label={tr(TX.register.insurance)}>
             <input className="form-input" value={form.insurance} onChange={e => set('insurance', e.target.value)} placeholder={tr(TX.register.insurancePh)} />
