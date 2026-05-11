@@ -5,6 +5,8 @@
  * Auto-syncs to Supabase when connectivity is restored.
  */
 
+import { coerceUUIDs } from './utils'
+
 const QUEUE_KEY = 'healthpod_offline_queue'
 const SYNCING_KEY = 'healthpod_syncing'
 
@@ -22,13 +24,9 @@ const PATIENT_FIELDS = new Set([
   'consent_given', 'consent_timestamp',
 ])
 
-// UUID columns that must never be sent as empty strings — coerce '' → null.
-const UUID_FIELDS = new Set(['healthpod_id', 'campaign_id'])
-
 function sanitise(record) {
   const out = Object.fromEntries(Object.entries(record).filter(([k]) => PATIENT_FIELDS.has(k)))
-  for (const f of UUID_FIELDS) { if (out[f] === '' || out[f] === undefined) out[f] = null }
-  return out
+  return coerceUUIDs(out)
 }
 
 // Clear any sync state left over from a previous crash

@@ -39,3 +39,15 @@ export function formatDateTime(dateStr) {
   if (!dateStr) return '—'
   try { return format(new Date(dateStr), 'dd MMM yyyy, hh:mm a') } catch { return dateStr }
 }
+
+// PostgreSQL rejects empty string for uuid columns — coerce to null.
+// Matches any key that ends with '_id' or is a known uuid column name.
+const UUID_KEY_PATTERN = /_id$|^created_by$|^user_id$/
+export function coerceUUIDs(record) {
+  if (!record || typeof record !== 'object') return record
+  const out = { ...record }
+  for (const [k, v] of Object.entries(out)) {
+    if (UUID_KEY_PATTERN.test(k) && (v === '' || v === undefined)) out[k] = null
+  }
+  return out
+}

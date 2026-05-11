@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import { supabase } from './supabase'
+import { coerceUUIDs } from './utils'
 
 const AppContext = createContext(null)
 
@@ -35,17 +36,14 @@ export function AppProvider({ children }) {
   }, [])
 
   const savePatient = useCallback(async (patientData) => {
-    const UUID_COLS = ['healthpod_id', 'campaign_id', 'created_by']
-    const safe = { ...patientData }
-    for (const col of UUID_COLS) { if (safe[col] === '' || safe[col] === undefined) safe[col] = null }
-    const { data, error } = await supabase.from('patients').insert([safe]).select().single()
+    const { data, error } = await supabase.from('patients').insert([coerceUUIDs(patientData)]).select().single()
     if (error) throw error
     setPatients(prev => [data, ...prev])
     return data
   }, [])
 
   const updatePatient = useCallback(async (id, updates) => {
-    const { data, error } = await supabase.from('patients').update(updates).eq('id', id).select().single()
+    const { data, error } = await supabase.from('patients').update(coerceUUIDs(updates)).eq('id', id).select().single()
     if (error) throw error
     setPatients(prev => prev.map(p => p.id === id ? data : p))
     return data
@@ -62,7 +60,7 @@ export function AppProvider({ children }) {
   }, [])
 
   const saveScreening = useCallback(async (screeningData) => {
-    const { data, error } = await supabase.from('screenings').upsert([screeningData], { onConflict: 'patient_id,cancer_type' }).select().single()
+    const { data, error } = await supabase.from('screenings').upsert([coerceUUIDs(screeningData)], { onConflict: 'patient_id,cancer_type' }).select().single()
     if (error) throw error
     setScreenings(prev => {
       const idx = prev.findIndex(s => s.patient_id === screeningData.patient_id && s.cancer_type === screeningData.cancer_type)
