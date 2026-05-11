@@ -57,11 +57,22 @@ export default function Login() {
           padding: '3rem', minWidth: 0,
         }}
       >
-        <img
-          src="/logo-light.svg"
-          alt="VPS Lakeshore Hospital"
-          style={{ height: 72, marginBottom: '2.5rem' }}
-        />
+        <div style={{
+          background: 'rgba(255,255,255,0.97)',
+          borderRadius: 16,
+          padding: '0.875rem 1.5rem',
+          marginBottom: '2.5rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+        }}>
+          <img
+            src="/logo.png"
+            alt="VPS Lakeshore Hospital"
+            style={{ height: 56, width: 'auto', display: 'block' }}
+          />
+        </div>
         <div style={{ textAlign: 'center', color: 'white' }}>
           <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}>HealthPod</h1>
           <p style={{ margin: '0 0 0.5rem', opacity: 0.65, fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 500 }}>Screening &amp; Early Detection Programme</p>
@@ -85,7 +96,7 @@ export default function Login() {
         {mode === 'login' ? (
           <>
             <div style={{ marginBottom: '2rem' }}>
-              <img src="/logo.svg" alt="VPS Lakeshore" style={{ height: 36, marginBottom: '0.5rem', display: 'block' }} className="mobile-only-logo" />
+              <img src="/logo.png" alt="VPS Lakeshore" style={{ height: 40, marginBottom: '0.75rem', display: 'block' }} className="mobile-only-logo" />
               <p className="mobile-only-tagline" style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 600, fontStyle: 'italic', color: BLUE, letterSpacing: '0.01em' }}>
                 Your Health. Revealed. Rewarded. In 10 min.
               </p>
