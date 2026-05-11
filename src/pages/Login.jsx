@@ -14,16 +14,8 @@ export default function Login() {
   const [mode, setMode] = useState('login') // 'login' | 'reset'
   const [resetSent, setResetSent] = useState(false)
 
-  async function handleGuest() {
+  function handleGuest() {
     setGuestLoading(true)
-    try {
-      const { data, error: err } = await supabase.auth.signInAnonymously()
-      if (!err && data.user) {
-        setUser(data.user)
-        return
-      }
-    } catch (_) { /* anonymous auth not enabled — fall through */ }
-    // Fallback: navigate directly to kiosk without a session
     window.location.href = '/kiosk'
   }
 
