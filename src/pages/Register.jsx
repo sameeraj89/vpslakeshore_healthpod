@@ -253,7 +253,7 @@ export default function Register() {
         </Section>
 
         <Section icon={Phone} title={tr(TX.register.contactDetails)}>
-          <Field label={tr(TX.register.primaryPhone)} required>
+          <Field label={tr(TX.register.primaryPhone)}>
             <input className="form-input" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 XXXXX XXXXX" />
           </Field>
           <Field label={tr(TX.register.altPhone)}>

@@ -108,7 +108,8 @@ export default function Campaigns() {
   }
 
   async function toggleActive(c) {
-    await supabase.from('campaigns').update({ active: !c.active }).eq('id', c.id)
+    const { error } = await supabase.from('campaigns').update({ active: !c.active }).eq('id', c.id)
+    if (error) { showToast('Failed to update campaign: ' + error.message, 'error'); return }
     load()
   }
 

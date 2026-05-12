@@ -55,7 +55,11 @@ export default function UserManagement() {
         name: form.name,
         role: form.role,
       })
-      if (profileError) throw profileError
+      if (profileError) {
+        // Auth account was created but profile failed — show actionable error
+        // (anon client cannot delete auth users; admin must clean up in Supabase dashboard)
+        throw new Error(`Profile creation failed: ${profileError.message}. Auth account for ${form.email} was created — please delete it in Supabase Auth if you want to retry.`)
+      }
 
       showToast(`Account created for ${form.email}`)
       setForm({ email: '', password: '', name: '', role: 'data_entry' })

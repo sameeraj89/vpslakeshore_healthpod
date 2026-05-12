@@ -10,12 +10,13 @@ import { UserPlus, Download, Search, ChevronRight, Database } from 'lucide-react
 import { useT } from '../lib/lang'
 import TX from '../lib/translations'
 import { SCREENING_TYPES } from '../lib/screeningConfig'
+import { can } from '../lib/roles'
 
 const CLINICAL_TYPES = SCREENING_TYPES.filter(t => t.type === 'clinical')
 
 export default function Patients() {
   const navigate = useNavigate()
-  const { patients, fetchPatients, loading } = useApp()
+  const { patients, fetchPatients, loading, user, showToast } = useApp()
   const { tr } = useT()
   const [searchParams] = useSearchParams()
   const [search, setSearch] = useState('')
@@ -40,14 +41,24 @@ export default function Patients() {
   })
 
   async function handleExport() {
-    const { data: scs } = await supabase.from('screenings').select('*')
-    exportToExcel(filtered, scs || [])
+    try {
+      const { data: scs, error } = await supabase.from('screenings').select('*')
+      if (error) throw error
+      exportToExcel(filtered, scs || [])
+    } catch (err) {
+      showToast('Export failed: ' + (err.message || 'Unknown error'), 'error')
+    }
   }
 
   async function handleDHIS2Export() {
-    const { data: scs } = await supabase.from('screenings').select('*')
-    const count = exportDHIS2(filtered, scs || [])
-    alert(`DHIS2 export ready — ${count} patient records.\n\nBefore importing to DHIS2, update the UID mappings in src/lib/exportDHIS2.js with your programme's org unit and attribute UIDs.`)
+    try {
+      const { data: scs, error } = await supabase.from('screenings').select('*')
+      if (error) throw error
+      const count = exportDHIS2(filtered, scs || [])
+      alert(`DHIS2 export ready — ${count} patient records.\n\nBefore importing to DHIS2, update the UID mappings in src/lib/exportDHIS2.js with your programme's org unit and attribute UIDs.`)
+    } catch (err) {
+      showToast('DHIS2 export failed: ' + (err.message || 'Unknown error'), 'error')
+    }
   }
 
   function getScreeningDots(patientId) {
@@ -65,12 +76,16 @@ export default function Patients() {
         subtitle={`${filtered.length} ${tr(TX.common.of)} ${patients.length} ${tr(TX.common.patients)}`}
         action={
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button className="btn-secondary" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Download size={15} /> {tr(TX.patients.thScreenings) === 'Screenings' ? 'Excel' : 'Excel'}
-            </button>
-            <button className="btn-secondary" onClick={handleDHIS2Export} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#7c3aed', borderColor: '#7c3aed' }}>
-              <Database size={15} /> DHIS2
-            </button>
+            {can(user, 'export') && (
+              <button className="btn-secondary" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Download size={15} /> Excel
+              </button>
+            )}
+            {can(user, 'export') && (
+              <button className="btn-secondary" onClick={handleDHIS2Export} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#7c3aed', borderColor: '#7c3aed' }}>
+                <Database size={15} /> DHIS2
+              </button>
+            )}
             <button className="btn-primary" onClick={() => navigate('/register')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <UserPlus size={15} /> {tr(TX.patients.newPatient)}
             </button>
