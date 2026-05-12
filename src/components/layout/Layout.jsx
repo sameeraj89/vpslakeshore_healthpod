@@ -31,7 +31,7 @@ export default function Layout({ children }) {
           >
             <Menu size={20} color="#475569" />
           </button>
-          <img src="/logo.svg" alt="HealthPod" style={{ height: 32 }} />
+          <img src="/logo.png" alt="VPS Lakeshore Hospital" style={{ height: 32, width: 'auto' }} />
           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>HealthPod</span>
         </div>
 

@@ -103,7 +103,7 @@ export default function PatientSummary() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', borderBottom: '3px solid #1B75BC', paddingBottom: '0.875rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <img src="/logo.svg" alt="VPS Lakeshore" style={{ height: 44 }} onError={e => e.target.style.display='none'} />
+            <img src="/logo.png" alt="VPS Lakeshore Hospital" style={{ height: 44, width: 'auto' }} onError={e => e.target.style.display='none'} />
             <div>
               <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>VPS Lakeshore Hospital</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b' }}>HealthPod · Screening &amp; Early Detection Programme</div>

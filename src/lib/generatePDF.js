@@ -49,27 +49,24 @@ function sectionHeading(doc, label, y, pad, W) {
   return y + 8
 }
 
-// Loads /logo.svg → PNG data-URL via an off-screen canvas
+// Loads /logo.png → base64 data-URL directly (sharper than SVG→canvas pipeline)
 async function loadLogoDataUrl() {
   try {
-    const res = await fetch('/logo.svg')
-    const svgText = await res.text()
-    const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    return await new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = 560; canvas.height = 130
-        canvas.getContext('2d').drawImage(img, 0, 0, 560, 130)
-        URL.revokeObjectURL(url)
-        resolve(canvas.toDataURL('image/png'))
-      }
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
-      img.src = url
-    })
+    const res = await fetch('/logo.png')
+    if (!res.ok) return null
+    const buffer = await res.arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+    let binary = ''
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return 'data:image/png;base64,' + btoa(binary)
   } catch { return null }
 }
+
+// Logo aspect ratio constants (logo.png = 495 × 295 px → 1.678 : 1)
+const LOGO_W = 495, LOGO_H = 295
+function logoSize(h) { return { w: Math.round(h * LOGO_W / LOGO_H), h } }
 
 // ── Main export ────────────────────────────────────────────────────────────
 
@@ -84,46 +81,63 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   // HEADER
   // ═══════════════════════════════════════════════════════════════
 
-  // Top brand stripe
+  // Top brand stripes
   doc.setFillColor(...C.blue)
-  doc.rect(0, 0, W, 3.5, 'F')
+  doc.rect(0, 0, W, 4, 'F')
+  doc.setFillColor(...C.maroon)
+  doc.rect(0, 4, W, 1.2, 'F')
 
-  // Logo (left)
-  let y = 7
+  // Logo (left) — logo.png at correct aspect ratio (495×295 → ~34×20 mm)
+  let y = 8
   const logoUrl = await loadLogoDataUrl()
+  const lg = logoSize(20)   // height 20 mm → width ≈ 34 mm
   if (logoUrl) {
-    doc.addImage(logoUrl, 'PNG', pad, y, 74, 17)
+    doc.addImage(logoUrl, 'PNG', pad, y, lg.w, lg.h)
   } else {
+    // Text-only fallback
     doc.setTextColor(...C.maroon)
     doc.setFont('helvetica', 'bold'); doc.setFontSize(15)
     doc.text('vps', pad, y + 10)
     doc.setTextColor(...C.blue)
-    doc.text(' Lakeshore', pad + 12, y + 10)
-    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal')
-    doc.text('Hospital', pad + 12, y + 15)
+    doc.text(' Lakeshore Hospital', pad + 12, y + 10)
   }
+
+  // HealthPod sub-brand pill (right of logo)
+  const hpX = pad + lg.w + 5, hpY = y + 2
+  doc.setFillColor(240, 247, 255)
+  doc.setDrawColor(...C.blue)
+  doc.setLineWidth(0.35)
+  doc.roundedRect(hpX, hpY, 52, 9, 2, 2, 'FD')
+  doc.setTextColor(...C.blue)
+  doc.setFontSize(7)
+  doc.setFont('helvetica', 'bold')
+  doc.text('HealthPod', hpX + 5, hpY + 6)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.setTextColor(...C.mutedText)
+  doc.text('Screening & Early Detection', hpX + 5, hpY + 11.5)
 
   // Hospital address sub-line
   doc.setTextColor(...C.mutedText)
   doc.setFontSize(6.2)
   doc.setFont('helvetica', 'normal')
-  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 23)
-  doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 27.5)
+  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 25)
+  doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 29.5)
 
-  // Right info panel
-  const rpX = 130, rpW = W - rpX - pad
+  // Right info panel (slightly wider now that logo is more compact)
+  const rpX = 126, rpW = W - rpX - pad
   doc.setFillColor(...C.bgLight)
   doc.setDrawColor(...C.border)
   doc.setLineWidth(0.3)
-  doc.roundedRect(rpX, y, rpW, 30, 2, 2, 'FD')
+  doc.roundedRect(rpX, y, rpW, 32, 2, 2, 'FD')
 
   doc.setFillColor(...C.blue)
-  doc.roundedRect(rpX, y, rpW, 7, 2, 2, 'F')
-  doc.rect(rpX, y + 4, rpW, 3, 'F')
+  doc.roundedRect(rpX, y, rpW, 8, 2, 2, 'F')
+  doc.rect(rpX, y + 5, rpW, 3, 'F')
   doc.setTextColor(...C.white)
   doc.setFontSize(6.5)
   doc.setFont('helvetica', 'bold')
-  doc.text('NCD HEALTH RISK SCORECARD', rpX + rpW / 2, y + 4.8, { align: 'center' })
+  doc.text('NCD HEALTH RISK SCORECARD', rpX + rpW / 2, y + 5.5, { align: 'center' })
 
   function rpRow(label, val, ry) {
     doc.setFont('helvetica', 'normal')
@@ -135,17 +149,20 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
     doc.setFont('helvetica', 'bold')
     doc.text(String(val), rpX + rpW - 3, ry, { align: 'right' })
   }
-  rpRow('Report Date', format(new Date(), 'dd MMM yyyy'), y + 12.5)
-  rpRow('UHID', patient.uhid || '—', y + 18.5)
-  rpRow('Report Ref', `HPR-${(patient.uhid || 'XXXXXX').slice(-6)}`, y + 24.5)
+  rpRow('Report Date', format(new Date(), 'dd MMM yyyy'), y + 14)
+  rpRow('UHID', patient.uhid || '—', y + 20)
+  rpRow('Report Ref', `HPR-${(patient.uhid || 'XXXXXX').slice(-6)}`, y + 26)
 
-  y += 34
+  y += 38
 
   // Header / content divider
   doc.setDrawColor(...C.blue)
-  doc.setLineWidth(0.6)
+  doc.setLineWidth(0.7)
   doc.line(pad, y, W - pad, y)
-  y += 6
+  doc.setDrawColor(...C.maroon)
+  doc.setLineWidth(0.3)
+  doc.line(pad, y + 0.9, W - pad, y + 0.9)
+  y += 7
 
   // ═══════════════════════════════════════════════════════════════
   // PATIENT INFORMATION
@@ -574,23 +591,25 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
 // ── Shared page header for page 2+ ─────────────────────────────────────────
 function addPageHeader(doc, patient, pageNum, W, pad, logoUrl) {
   doc.setFillColor(27, 117, 188)
-  doc.rect(0, 0, W, 3, 'F')
+  doc.rect(0, 0, W, 3.5, 'F')
   doc.setFillColor(166, 33, 90)
-  doc.rect(0, 3, W, 1, 'F')
+  doc.rect(0, 3.5, W, 1, 'F')
 
+  // Logo.png at correct aspect ratio (495×295) — height 10 mm → width ≈ 16.8 mm
   if (logoUrl) {
-    doc.addImage(logoUrl, 'PNG', pad, 6, 44, 10)
+    const lh = 10, lw = Math.round(lh * LOGO_W / LOGO_H)
+    doc.addImage(logoUrl, 'PNG', pad, 5.5, lw, lh)
   }
 
   doc.setTextColor(100, 116, 139)
   doc.setFontSize(6.5)
   doc.setFont('helvetica', 'normal')
-  doc.text(`${patient.name || '—'}  ·  ${patient.uhid || '—'}  ·  HealthPod Full Report`, W / 2, 11, { align: 'center' })
-  doc.text(`Page ${pageNum}`, W - pad, 11, { align: 'right' })
+  doc.text(`${patient.name || '—'}  ·  ${patient.uhid || '—'}  ·  HealthPod Full Report`, W / 2, 12, { align: 'center' })
+  doc.text(`Page ${pageNum}`, W - pad, 12, { align: 'right' })
 
   doc.setDrawColor(226, 232, 240)
   doc.setLineWidth(0.3)
-  doc.line(pad, 14, W - pad, 14)
+  doc.line(pad, 16, W - pad, 16)
 }
 
 // ── Shared page footer ─────────────────────────────────────────────────────
@@ -627,37 +646,54 @@ export async function generateFullReport(
   // PAGE 1 — Risk Score + Domains + Voucher
   // ═══════════════════════════════════════════════════════════════
 
-  // Top brand stripe
+  // Top brand stripes
   doc.setFillColor(...C.blue)
   doc.rect(0, 0, W, 4, 'F')
   doc.setFillColor(...C.maroon)
-  doc.rect(0, 4, W, 1, 'F')
+  doc.rect(0, 4, W, 1.2, 'F')
 
-  let y = 9
+  let y = 8
 
-  // Logo (left)
+  // Logo (left) — PNG at correct aspect ratio (495×295 → ~34×20 mm)
+  const frlg = logoSize(20)
   if (logoUrl) {
-    doc.addImage(logoUrl, 'PNG', pad, y, 74, 17)
+    doc.addImage(logoUrl, 'PNG', pad, y, frlg.w, frlg.h)
   }
+
+  // HealthPod sub-brand pill
+  const frHpX = pad + frlg.w + 5, frHpY = y + 2
+  doc.setFillColor(240, 247, 255)
+  doc.setDrawColor(...C.blue)
+  doc.setLineWidth(0.35)
+  doc.roundedRect(frHpX, frHpY, 52, 9, 2, 2, 'FD')
+  doc.setTextColor(...C.blue)
+  doc.setFontSize(7)
+  doc.setFont('helvetica', 'bold')
+  doc.text('HealthPod', frHpX + 5, frHpY + 6)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.setTextColor(...C.mutedText)
+  doc.text('Screening & Early Detection', frHpX + 5, frHpY + 11.5)
+
   doc.setTextColor(...C.mutedText)
   doc.setFontSize(6.2)
   doc.setFont('helvetica', 'normal')
-  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 22)
-  doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 26.5)
+  doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040', pad, y + 25)
+  doc.text('Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', pad, y + 29.5)
 
   // Right report info panel
-  const rpX = 128, rpW = W - rpX - pad
+  const rpX = 126, rpW = W - rpX - pad
   doc.setFillColor(...C.bgLight)
   doc.setDrawColor(...C.border)
   doc.setLineWidth(0.3)
-  doc.roundedRect(rpX, y, rpW, 30, 2, 2, 'FD')
+  doc.roundedRect(rpX, y, rpW, 32, 2, 2, 'FD')
   doc.setFillColor(...C.blue)
-  doc.roundedRect(rpX, y, rpW, 7, 2, 2, 'F')
-  doc.rect(rpX, y + 4, rpW, 3, 'F')
+  doc.roundedRect(rpX, y, rpW, 8, 2, 2, 'F')
+  doc.rect(rpX, y + 5, rpW, 3, 'F')
   doc.setTextColor(...C.white)
   doc.setFontSize(6.5)
   doc.setFont('helvetica', 'bold')
-  doc.text('FULL HEALTH REPORT', rpX + rpW / 2, y + 4.8, { align: 'center' })
+  doc.text('FULL HEALTH REPORT', rpX + rpW / 2, y + 5.5, { align: 'center' })
 
   function rpRow(label, val, ry) {
     doc.setFont('helvetica', 'normal')
@@ -666,16 +702,19 @@ export async function generateFullReport(
     doc.setTextColor(...C.darkText); doc.setFontSize(7); doc.setFont('helvetica', 'bold')
     doc.text(String(val), rpX + rpW - 3, ry, { align: 'right' })
   }
-  rpRow('Date', format(new Date(), 'dd MMM yyyy'), y + 12.5)
-  rpRow('UHID', patient.uhid || '—', y + 18.5)
-  rpRow('Report Ref', `HPR-${(patient.uhid || 'XXXXXX').slice(-6)}`, y + 24.5)
+  rpRow('Date', format(new Date(), 'dd MMM yyyy'), y + 14)
+  rpRow('UHID', patient.uhid || '—', y + 20)
+  rpRow('Report Ref', `HPR-${(patient.uhid || 'XXXXXX').slice(-6)}`, y + 26)
 
-  y += 35
+  y += 38
 
   doc.setDrawColor(...C.blue)
-  doc.setLineWidth(0.6)
+  doc.setLineWidth(0.7)
   doc.line(pad, y, W - pad, y)
-  y += 5
+  doc.setDrawColor(...C.maroon)
+  doc.setLineWidth(0.3)
+  doc.line(pad, y + 0.9, W - pad, y + 0.9)
+  y += 6
 
   // Patient card
   y = sectionHeading(doc, 'PATIENT INFORMATION', y, pad, W)
@@ -814,7 +853,7 @@ export async function generateFullReport(
 
   doc.addPage()
   addPageHeader(doc, patient, 2, W, pad, logoUrl)
-  y = 20
+  y = 22
 
   // ── Screening Results ──────────────────────────────────────────
   y = sectionHeading(doc, 'SCREENING RESULTS', y, pad, W)

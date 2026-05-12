@@ -73,18 +73,40 @@ export default function Sidebar({ mobileOpen, onClose }) {
     }}>
 
       {/* Logo area */}
-      <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
-        <img src="/logo.png" alt="VPS Lakeshore Hospital" style={{ height: 44, width: 'auto', display: 'block' }} />
+      <div style={{ padding: '1rem 1rem 0.875rem', borderBottom: '1px solid #f1f5f9' }}>
+        {/* Logo card — matches login-page treatment */}
         <div style={{
-          marginTop: '0.625rem',
+          background: 'white',
+          border: '1px solid #e8ecf2',
+          borderRadius: 10,
+          padding: '0.625rem 0.875rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+          marginBottom: '0.625rem',
+        }}>
+          <img
+            src="/logo.png"
+            alt="VPS Lakeshore Hospital"
+            style={{ height: 40, width: 'auto', display: 'block', maxWidth: '100%' }}
+          />
+        </div>
+        {/* HealthPod programme badge */}
+        <div style={{
           background: BRAND_GRADIENT,
           borderRadius: 6,
-          padding: '0.3rem 0.625rem',
-          display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+          padding: '0.3rem 0.75rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'white', opacity: 0.8 }} />
-          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'white', letterSpacing: '0.08em' }}>
-            HEALTHPOD
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'white', opacity: 0.8 }} />
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'white', letterSpacing: '0.08em' }}>
+              HEALTHPOD
+            </span>
+          </div>
+          <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>
+            Screening Programme
           </span>
         </div>
       </div>

@@ -9,8 +9,8 @@
   <!-- "Lakeshore" title-case bold white -->
   <text x="142" y="80" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="64" fill="white">Lakeshore</text>
 
-  <!-- "Medical Centre" subtitle — semi-transparent white -->
-  <text x="144" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="20" fill="rgba(255,255,255,0.65)" letter-spacing="0.8">Medical Centre</text>
+  <!-- "Hospital" subtitle — semi-transparent white -->
+  <text x="144" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="20" fill="rgba(255,255,255,0.65)" letter-spacing="0.8">Hospital</text>
 
   <!-- Ribbon cross emblem — top right, rotated ~15° clockwise -->
   <!-- Lighter colours for visibility on dark gradient -->
