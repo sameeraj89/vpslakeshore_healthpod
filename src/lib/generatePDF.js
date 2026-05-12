@@ -70,7 +70,7 @@ function logoSize(h) { return { w: Math.round(h * LOGO_W / LOGO_H), h } }
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export async function generateScorecard(patientRaw, score, tier, domainScores) {
+export async function generateScorecard(patientRaw, score, tier, domainScores, screenings = {}) {
   const patient = patientRaw || {}
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const W = 210, H = 297, pad = 14
@@ -583,11 +583,129 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setFont('helvetica', 'normal')
   doc.text('Nettoor P.O., Maradu, Kochi, Kerala 682 040  ·  Tel: +91-484-2701000  ·  healthpod@vpskeralahealthcare.com', W / 2, H - 5.5, { align: 'center' })
 
+  // ═══════════════════════════════════════════════════════════════
+  // PAGE 2 — Clinical Screening Results (if any screenings recorded)
+  // ═══════════════════════════════════════════════════════════════
+
+  const cancerTypes = SCREENING_TYPES.filter(st =>
+    st.category === 'cancer' && st.type === 'clinical' &&
+    (!st.genderFilter || st.genderFilter.includes(patient.gender) || !patient.gender)
+  )
+  const hasAnyScreening = cancerTypes.some(st => screenings?.[st.key]?.result)
+
+  if (hasAnyScreening) {
+    doc.addPage()
+    addPageHeader(doc, patient, 2, W, pad, logoUrl, 'HealthPod Clinical Screening Report')
+
+    let sy = 22
+
+    // Section heading
+    sy = sectionHeading(doc, 'CANCER SCREENING RESULTS', sy, pad, W)
+
+    // Table header
+    const sColW = { type: 44, method: 36, finding: 56, result: innerW - 44 - 36 - 56 }
+    doc.setFillColor(...C.blue)
+    doc.roundedRect(pad, sy, innerW, 7, 1.5, 1.5, 'F')
+    doc.setTextColor(...C.white); doc.setFontSize(6); doc.setFont('helvetica', 'bold')
+    let shx = pad + 3
+    ;[['TYPE', sColW.type], ['METHOD', sColW.method], ['FINDING', sColW.finding], ['RESULT', sColW.result]].forEach(([h, w]) => {
+      doc.text(h, shx, sy + 5); shx += w
+    })
+    sy += 7
+
+    cancerTypes.forEach((st, si) => {
+      const s = screenings?.[st.key]
+      const done = !!(s?.result)
+      const positive = done && /positive|elevated|refer|suspicious|high risk/i.test(s.result)
+      const rowH = 12
+
+      if (si % 2 === 0) { doc.setFillColor(250, 251, 253); doc.rect(pad, sy, innerW, rowH, 'F') }
+      doc.setDrawColor(...C.border); doc.setLineWidth(0.2); doc.line(pad, sy + rowH, pad + innerW, sy + rowH)
+
+      // Left status bar
+      if (done) {
+        doc.setFillColor(...(positive ? C.red : C.green))
+      } else {
+        doc.setFillColor(...C.border)
+      }
+      doc.rect(pad, sy, 2.5, rowH, 'F')
+
+      let rx = pad + 3
+      // Type
+      doc.setTextColor(...C.midText); doc.setFontSize(7.5); doc.setFont('helvetica', done ? 'bold' : 'normal')
+      const typeLines = doc.splitTextToSize(st.label?.en || st.key, sColW.type - 4)
+      doc.text(typeLines, rx, sy + 4.5)
+      rx += sColW.type
+
+      // Method
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.mutedText)
+      const methLines = doc.splitTextToSize(st.method?.en || '—', sColW.method - 4)
+      doc.text(methLines, rx, sy + 4.5)
+      rx += sColW.method
+
+      if (done) {
+        // Finding
+        doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.midText)
+        const fLines = doc.splitTextToSize(s.finding || '—', sColW.finding - 4)
+        doc.text(fLines, rx, sy + 4.5)
+        rx += sColW.finding
+
+        // Result pill
+        const rW = sColW.result - 4
+        const rColor = positive ? C.red : C.green
+        doc.setFillColor(...rColor)
+        doc.roundedRect(rx, sy + 2, rW, 8, 1.5, 1.5, 'F')
+        doc.setTextColor(...C.white); doc.setFontSize(6); doc.setFont('helvetica', 'bold')
+        const rLines = doc.splitTextToSize(s.result || '', rW - 3)
+        doc.text(rLines, rx + rW / 2, sy + 6, { align: 'center' })
+      } else {
+        doc.setTextColor(...C.border); doc.setFontSize(7); doc.setFont('helvetica', 'italic')
+        doc.text('Not recorded', rx + sColW.finding / 2, sy + 6.5, { align: 'center' })
+      }
+
+      sy += rowH
+    })
+
+    sy += 6
+
+    // Summary line
+    const doneCount = cancerTypes.filter(st => screenings?.[st.key]?.result).length
+    const positiveCount = cancerTypes.filter(st => {
+      const s = screenings?.[st.key]
+      return s?.result && /positive|refer|high risk/i.test(s.result)
+    }).length
+
+    doc.setFillColor(...C.bgBlue); doc.setDrawColor(...C.blue); doc.setLineWidth(0.3)
+    doc.roundedRect(pad, sy, innerW, 10, 1.5, 1.5, 'FD')
+    doc.setTextColor(...C.blue); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold')
+    doc.text(`${doneCount} of ${cancerTypes.length} cancer screenings completed  ·  ${positiveCount} positive finding${positiveCount !== 1 ? 's' : ''} — refer for further evaluation`, pad + 5, sy + 6.5)
+
+    sy += 14
+
+    // Clinical notes column (if any)
+    const notedTypes = cancerTypes.filter(st => screenings?.[st.key]?.notes)
+    if (notedTypes.length > 0) {
+      sy = sectionHeading(doc, 'CLINICAL NOTES', sy, pad, W)
+      notedTypes.forEach(st => {
+        const s = screenings[st.key]
+        doc.setFillColor(...C.bgLight); doc.roundedRect(pad, sy, innerW, 12, 1.5, 1.5, 'F')
+        doc.setTextColor(...C.blue); doc.setFontSize(7); doc.setFont('helvetica', 'bold')
+        doc.text(`${st.icon || ''} ${st.label?.en || st.key}`.trim(), pad + 4, sy + 5)
+        doc.setTextColor(...C.midText); doc.setFontSize(6.5); doc.setFont('helvetica', 'normal')
+        const nLines = doc.splitTextToSize(s.notes || '', innerW - 10)
+        doc.text(nLines, pad + 4, sy + 9)
+        sy += 14
+      })
+    }
+
+    addPageFooter(doc, W, H, pad)
+  }
+
   doc.save(`HealthPod_Scorecard_${patient.uhid || 'patient'}.pdf`)
 }
 
 // ── Shared page header for page 2+ ─────────────────────────────────────────
-function addPageHeader(doc, patient, pageNum, W, pad, logoUrl) {
+function addPageHeader(doc, patient, pageNum, W, pad, logoUrl, title = 'HealthPod Full Report') {
   doc.setFillColor(27, 117, 188)
   doc.rect(0, 0, W, 3.5, 'F')
   doc.setFillColor(166, 33, 90)
@@ -602,7 +720,7 @@ function addPageHeader(doc, patient, pageNum, W, pad, logoUrl) {
   doc.setTextColor(100, 116, 139)
   doc.setFontSize(6.5)
   doc.setFont('helvetica', 'normal')
-  doc.text(`${patient.name || '—'}  ·  ${patient.uhid || '—'}  ·  HealthPod Full Report`, W / 2, 12, { align: 'center' })
+  doc.text(`${patient.name || '—'}  ·  ${patient.uhid || '—'}  ·  ${title}`, W / 2, 12, { align: 'center' })
   doc.text(`Page ${pageNum}`, W - pad, 12, { align: 'right' })
 
   doc.setDrawColor(226, 232, 240)

@@ -4,9 +4,10 @@ import { supabase } from '../lib/supabase'
 import { useApp } from '../lib/store'
 import { useT } from '../lib/lang'
 import RiskAssessment from '../components/forms/RiskAssessment'
+import { SCREENING_TYPES } from '../lib/screeningConfig'
 
 const IDLE_MS = 3 * 60 * 1000   // reset to welcome after 3 min idle
-const THANKYOU_MS = 60 * 1000   // auto-reset from thank-you after 1 min
+const THANKYOU_MS = 120 * 1000  // auto-reset from thank-you after 2 min (extended to allow clinical screening input)
 const TAP_WINDOW = 2500          // 5 taps within 2.5s triggers staff exit
 const DEFAULT_PIN = '1234'
 
@@ -49,6 +50,7 @@ export default function Kiosk() {
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [resultDone, setResultDone] = useState(false)
+  const [kioskScreenings, setKioskScreenings] = useState({}) // { [typeKey]: { finding, result, notes } }
 
   // Staff exit: 5 taps in < 2.5s
   const tapTimes = useRef([])
@@ -139,6 +141,7 @@ export default function Kiosk() {
     setQuery('')
     setSearchError('')
     setResultDone(false)
+    setKioskScreenings({})
     setGuestName(''); setGuestAge(''); setGuestGender(''); setGuestPhone(''); setGuestError('')
   }
 
@@ -567,9 +570,116 @@ export default function Kiosk() {
             <RiskAssessment
               patient={patient}
               lang={lang}
+              screenings={kioskScreenings}
               onDone={() => setResultDone(true)}
             />
           </div>
+
+          {/* ── Clinical Cancer Screening section — appears after HRA is complete ── */}
+          {resultDone && (() => {
+            const cancerTypes = SCREENING_TYPES.filter(st =>
+              st.category === 'cancer' && st.type === 'clinical' &&
+              (!st.genderFilter || st.genderFilter.includes(patient?.gender) || !patient?.gender)
+            )
+            return (
+              <div style={{ marginTop: '1.5rem', background: 'white', borderRadius: 14, padding: '1.5rem', boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1.25rem' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(166,33,90,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🔬</div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1e293b' }}>
+                      {lang === 'ml' ? 'ക്ലിനിക്കൽ കാൻസർ സ്ക്രീനിംഗ്' : 'Clinical Cancer Screening'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      {lang === 'ml' ? 'ജീവനക്കാർ ഫലങ്ങൾ രേഖപ്പെടുത്തുന്നു' : 'Staff record findings below — included in PDF download'}
+                    </div>
+                  </div>
+                  <div style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 600, color: '#A6215A' }}>
+                    {cancerTypes.filter(st => kioskScreenings[st.key]?.result).length}/{cancerTypes.length} {lang === 'ml' ? 'ചെയ്തു' : 'done'}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+                  {cancerTypes.map(st => {
+                    const sc = kioskScreenings[st.key] || {}
+                    const isDone = !!(sc.result)
+                    const isPositive = isDone && /positive|refer|high risk/i.test(sc.result)
+                    return (
+                      <div key={st.key} style={{
+                        border: `1.5px solid ${isDone ? (isPositive ? '#fca5a5' : '#86efac') : '#e2e8f0'}`,
+                        borderRadius: 10,
+                        padding: '0.875rem',
+                        background: isDone ? (isPositive ? 'rgba(254,226,226,0.4)' : 'rgba(220,252,231,0.4)') : '#fafafa',
+                        transition: 'all 0.2s',
+                      }}>
+                        {/* Type header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
+                          <span style={{ fontSize: '1.1rem' }}>{st.icon}</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e293b' }}>
+                              {lang === 'ml' ? st.label?.ml : st.label?.en}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{st.method?.en}</div>
+                          </div>
+                          {isDone && (
+                            <div style={{ width: 20, height: 20, borderRadius: '50%', background: isPositive ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: 700 }}>{isPositive ? '!' : '✓'}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Finding select */}
+                        <div style={{ marginBottom: '0.5rem' }}>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '0.25rem' }}>
+                            {lang === 'ml' ? 'കണ്ടെത്തൽ' : 'Finding'}
+                          </label>
+                          <select
+                            value={sc.finding || ''}
+                            onChange={e => setKioskScreenings(prev => ({
+                              ...prev,
+                              [st.key]: { ...(prev[st.key] || {}), finding: e.target.value }
+                            }))}
+                            style={{ width: '100%', padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: '0.72rem', color: '#1e293b', background: 'white', cursor: 'pointer' }}
+                          >
+                            <option value="">{lang === 'ml' ? '— തിരഞ്ഞെടുക്കുക —' : '— Select finding —'}</option>
+                            {(st.fields.find(f => f.key === 'finding')?.options || []).map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Result select */}
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '0.25rem' }}>
+                            {lang === 'ml' ? 'ഫലം' : 'Result'}
+                          </label>
+                          <select
+                            value={sc.result || ''}
+                            onChange={e => setKioskScreenings(prev => ({
+                              ...prev,
+                              [st.key]: { ...(prev[st.key] || {}), result: e.target.value }
+                            }))}
+                            style={{ width: '100%', padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: '0.72rem', color: '#1e293b', background: 'white', cursor: 'pointer' }}
+                          >
+                            <option value="">{lang === 'ml' ? '— ഫലം തിരഞ്ഞെടുക്കുക —' : '— Select result —'}</option>
+                            {(st.fields.find(f => f.key === 'result')?.options || []).map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Info note */}
+                <div style={{ marginTop: '1rem', padding: '0.625rem 0.875rem', background: 'rgba(27,117,188,0.06)', borderRadius: 8, border: '1px solid rgba(27,117,188,0.15)', fontSize: '0.75rem', color: '#1B75BC' }}>
+                  {lang === 'ml'
+                    ? '💡 ഇവിടെ രേഖപ്പെടുത്തിയ ഫലങ്ങൾ PDF ഡൗൺലോഡ് ചെയ്യുമ്പോൾ ഉൾപ്പെടും.'
+                    : '💡 Findings recorded here will appear on Page 2 of the downloaded PDF scorecard.'}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Countdown strip — appears after ScoreCard is shown */}
           {resultDone && (

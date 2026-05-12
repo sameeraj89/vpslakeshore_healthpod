@@ -149,6 +149,38 @@ export const SCREENING_TYPES = [
     isPositive: d => /elevated|refer/i.test(d.result || ''),
   },
 
+  {
+    key: 'lung',
+    category: 'cancer',
+    label: { en: 'Lung Cancer', ml: 'ശ്വാസകോശ കാൻസർ' },
+    icon: '🫁',
+    color: '#0891b2',
+    method: { en: 'Sputum Cytology / CXR Ref.', ml: 'തുപ്പൽ കോശ / CXR' },
+    type: 'clinical',
+    fields: [
+      {
+        key: 'finding', label: 'Clinical Finding', type: 'radio', required: true,
+        options: [
+          'No symptoms — screen negative',
+          'Persistent cough (>3 weeks)',
+          'Haemoptysis (blood in sputum)',
+          'Unexplained weight loss + cough',
+          'Chest pain / breathlessness',
+        ],
+      },
+      {
+        key: 'result', label: 'Screening Outcome', type: 'select', required: true,
+        options: [
+          'Negative — low risk',
+          'Intermediate — refer for chest X-ray',
+          'High risk — urgent chest clinic referral',
+        ],
+      },
+      { key: 'notes', label: 'Clinical Notes', type: 'textarea', placeholder: 'Tobacco history, pack-years, duration of symptoms…' },
+    ],
+    isPositive: d => /refer|high risk/i.test(d.result || ''),
+  },
+
   // ─── NCD & VITALS ────────────────────────────────────────────────────────────
 
   {

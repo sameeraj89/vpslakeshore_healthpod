@@ -54,7 +54,7 @@ function PtsFlash({ pts }) {
   )
 }
 
-export default function RiskAssessment({ patient, onDone }) {
+export default function RiskAssessment({ patient, onDone, screenings = {} }) {
   const { saveRiskAssessment, updatePatient, showToast } = useApp()
   const { lang } = useLang()
   const [step, setStep] = useState(0)
@@ -225,7 +225,7 @@ export default function RiskAssessment({ patient, onDone }) {
     const domainScores = DOMAINS.map(d =>
       d.questions.reduce((s, q) => s + (answers[`${d.key}_${q.key}`]?.points || 0), 0)
     )
-    return <ScoreCard score={totalScore} tier={tier} lang={lang} patient={patient} domainScores={domainScores} />
+    return <ScoreCard score={totalScore} tier={tier} lang={lang} patient={patient} domainScores={domainScores} screenings={screenings} />
   }
 
   return (
@@ -554,7 +554,7 @@ export default function RiskAssessment({ patient, onDone }) {
 const RING_R = 54
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R
 
-function ScoreCard({ score, tier, lang, patient, domainScores }) {
+function ScoreCard({ score, tier, lang, patient, domainScores, screenings = {} }) {
   const [display, setDisplay] = useState(0)
   const [showDetails, setShowDetails] = useState(false)
   const rafRef = useRef(null)
@@ -580,9 +580,15 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
       const sub = lang === 'ml'
         ? `HealthPod ഹെൽത്ത് സ്കോർകാർഡ് — ${patient?.name || ''}`
         : `HealthPod Health Scorecard — ${patient?.name || ''} (${score}/100)`
-      // Pre-fill patient email if present on the record
       const to = patient?.email ? encodeURIComponent(patient.email) : ''
-      window.location.href = `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(msg)}`
+      // Use hidden anchor click — more reliable than window.location.href on kiosk devices
+      // and prevents the rare case of the page "navigating away" on some mobile browsers
+      const a = document.createElement('a')
+      a.href = `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(msg)}`
+      a.rel = 'noopener'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
     }
   }
 
@@ -725,7 +731,7 @@ function ScoreCard({ score, tier, lang, patient, domainScores }) {
       <div className="hp-print-hide" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', justifyContent: 'center', marginTop: '1.25rem', animation: 'fadeSlideUp 0.4s ease 0.9s both' }}>
         <button
           className="btn-primary"
-          onClick={() => generateScorecard(patient, score, tier, domainScores).catch(console.error)}
+          onClick={() => generateScorecard(patient, score, tier, domainScores, screenings).catch(console.error)}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1rem', fontSize: '0.85rem' }}
         >
           <Download size={14} />
