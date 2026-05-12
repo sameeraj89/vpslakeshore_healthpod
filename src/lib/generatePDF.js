@@ -107,13 +107,13 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setFillColor(240, 247, 255)
   doc.setDrawColor(...C.blue)
   doc.setLineWidth(0.35)
-  doc.roundedRect(hpX, hpY, 52, 9, 2, 2, 'FD')
+  doc.roundedRect(hpX, hpY, 52, 13, 2, 2, 'FD')
   doc.setTextColor(...C.blue)
-  doc.setFontSize(7)
+  doc.setFontSize(7.5)
   doc.setFont('helvetica', 'bold')
   doc.text('HealthPod', hpX + 5, hpY + 6)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6)
+  doc.setFontSize(5.5)
   doc.setTextColor(...C.mutedText)
   doc.text('Screening & Early Detection', hpX + 5, hpY + 11.5)
 
@@ -153,7 +153,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   rpRow('UHID', patient.uhid || '—', y + 20)
   rpRow('Report Ref', `HPR-${(patient.uhid || 'XXXXXX').slice(-6)}`, y + 26)
 
-  y += 38
+  y += 36
 
   // Header / content divider
   doc.setDrawColor(...C.blue)
@@ -208,7 +208,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
 
   y = sectionHeading(doc, 'HEALTH RISK SCORE', y, pad, W)
 
-  const scH = 46
+  const scH = 42
   // Card with tier-colored left accent bar
   doc.setFillColor(...C.white)
   doc.setDrawColor(...C.border)
@@ -303,9 +303,9 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'italic')
   const msgLines = doc.splitTextToSize(tier.message?.en || '', gaugeW)
-  doc.text(msgLines, gaugeX, y + 38)
+  doc.text(msgLines, gaugeX, y + 36)
 
-  y += scH + 6
+  y += scH + 4
 
   // ═══════════════════════════════════════════════════════════════
   // DOMAIN ANALYSIS
@@ -343,7 +343,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
     const pct = d.max > 0 ? ds / d.max : 0
     const barColor = pct >= 0.7 ? C.green : pct >= 0.4 ? C.amber : C.red
     const assessLabel = pct >= 0.7 ? 'GOOD' : pct >= 0.4 ? 'MODERATE' : 'NEEDS ATTN'
-    const rowH = 10
+    const rowH = 9
 
     // Alternating row
     if (i % 2 === 0) {
@@ -411,20 +411,18 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   const totalPct = score / 100
   const tierBarX = pad + cols.label + cols.score + 2
   const tierBarW = cols.bar - 6
-  doc.setFillColor(255, 255, 255, 0.25)
   doc.setFillColor(255, 255, 255)
-  doc.setGState ? null : null
   doc.roundedRect(tierBarX, y + 1.5, tierBarW, 5, 1, 1, 'F')
   doc.setFillColor(...tc)
   doc.roundedRect(tierBarX, y + 1.5, tierBarW * totalPct, 5, 1, 1, 'F')
 
-  y += 8 + 7
+  y += 8 + 4
 
   // ═══════════════════════════════════════════════════════════════
   // VOUCHER  +  NEXT STEPS  (two columns)
   // ═══════════════════════════════════════════════════════════════
 
-  const twoH = 40
+  const twoH = 34
   const vW = 84       // voucher card width
   const nsX = pad + vW + 4
   const nsW = innerW - vW - 4
@@ -505,7 +503,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   const stepList = stepsByTier[tier.level] || stepsByTier.green
 
   stepList.forEach((s, i) => {
-    const sy = y + 14 + i * 9
+    const sy = y + 13 + i * 8
     // Numbered badge
     doc.setFillColor(...tc)
     doc.circle(nsX + 7, sy - 0.5, 3, 'F')
@@ -520,7 +518,7 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
     doc.text(s, nsX + 13, sy + 1)
   })
 
-  y += twoH + 7
+  y += twoH + 5
 
   // ═══════════════════════════════════════════════════════════════
   // DISCLAIMER
@@ -529,12 +527,12 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setFillColor(254, 252, 232)
   doc.setDrawColor(253, 230, 138)
   doc.setLineWidth(0.3)
-  doc.roundedRect(pad, y, innerW, 14, 2, 2, 'FD')
+  doc.roundedRect(pad, y, innerW, 11, 2, 2, 'FD')
 
   // Left accent
   doc.setFillColor(253, 177, 21)
-  doc.roundedRect(pad, y, 3, 14, 2, 2, 'F')
-  doc.rect(pad + 1.5, y, 1.5, 14, 'F')
+  doc.roundedRect(pad, y, 3, 11, 2, 2, 'F')
+  doc.rect(pad + 1.5, y, 1.5, 11, 'F')
 
   doc.setTextColor(146, 64, 14)
   doc.setFontSize(6.5)
@@ -544,16 +542,16 @@ export async function generateScorecard(patientRaw, score, tier, domainScores) {
   doc.setFontSize(6.2)
   const disclaimerText = 'This scorecard is for health screening purposes only and does not constitute a clinical diagnosis or medical advice. Please consult a qualified physician for any health concerns. Validated using WHO STEPS NCD risk framework. Data handled per DISHA guidelines.'
   const dLines = doc.splitTextToSize(disclaimerText, innerW - 40)
-  doc.text(dLines, pad + 7, y + 10)
+  doc.text(dLines, pad + 7, y + 9)
 
-  y += 14
+  y += 11
 
   // ═══════════════════════════════════════════════════════════════
   // FOOTER
   // ═══════════════════════════════════════════════════════════════
 
   // Signature strip
-  const sigY = H - 28
+  const sigY = H - 26
   doc.setDrawColor(...C.border)
   doc.setLineWidth(0.3)
   doc.line(pad, sigY, W - pad, sigY)
@@ -665,13 +663,13 @@ export async function generateFullReport(
   doc.setFillColor(240, 247, 255)
   doc.setDrawColor(...C.blue)
   doc.setLineWidth(0.35)
-  doc.roundedRect(frHpX, frHpY, 52, 9, 2, 2, 'FD')
+  doc.roundedRect(frHpX, frHpY, 52, 13, 2, 2, 'FD')
   doc.setTextColor(...C.blue)
-  doc.setFontSize(7)
+  doc.setFontSize(7.5)
   doc.setFont('helvetica', 'bold')
   doc.text('HealthPod', frHpX + 5, frHpY + 6)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6)
+  doc.setFontSize(5.5)
   doc.setTextColor(...C.mutedText)
   doc.text('Screening & Early Detection', frHpX + 5, frHpY + 11.5)
 
@@ -777,7 +775,7 @@ export async function generateFullReport(
     doc.setFillColor(...C.blue); doc.roundedRect(pad, y, innerW, 7, 1.5, 1.5, 'F')
     doc.setTextColor(...C.white); doc.setFontSize(6); doc.setFont('helvetica', 'bold')
     let hx = pad + 3
-    ;['DOMAIN', 'SCORE', 'PERFORMANCE', 'ASSESSMENT'].forEach((h, i) => { doc.text(h, hx, y + 5); hx += [54, 22, 62, 44][i] })
+    ;['DOMAIN', 'SCORE', 'PERFORMANCE', 'ASSESSMENT'].forEach((h, i) => { doc.text(h, hx, y + 5); hx += [54, 22, 56, 50][i] })
     y += 7
     domains.forEach((d, i) => {
       const ds = domainScores[i] ?? 0, pct = d.max > 0 ? ds / d.max : 0
@@ -875,8 +873,8 @@ export async function generateFullReport(
     doc.text(`${cat.icon || ''} ${cat.label?.en || cat.key}`.trim(), pad + 4, y + 4.3)
     y += 6
 
-    // Table header
-    const colW = { type: 46, method: 40, finding: 54, result: 28, date: innerW - 46 - 40 - 54 - 28 }
+    // Table header — date gets 32 mm (was 14 mm)
+    const colW = { type: 40, method: 34, finding: 48, result: 28, date: innerW - 40 - 34 - 48 - 28 }
     doc.setFillColor(248, 250, 252); doc.rect(pad, y, innerW, 6, 'F')
     doc.setTextColor(...C.mutedText); doc.setFontSize(5.8); doc.setFont('helvetica', 'bold')
     let cx = pad + 2
@@ -957,8 +955,6 @@ export async function generateFullReport(
   if (referral) {
     y = sectionHeading(doc, 'REFERRAL DETAILS', y, pad, W)
     const isPriority = referral.priority === 'urgent'
-    doc.setFillColor(isPriority ? 255 : 240, isPriority ? 241 : 249, isPriority ? 242 : 255)
-    doc.setFillColor(isPriority ? 255 : 240, isPriority ? 241 : 249, isPriority ? 242 : 240)
     doc.setFillColor(...(isPriority ? [255, 241, 242] : [240, 249, 255]))
     doc.setDrawColor(...(isPriority ? C.red : C.blue)); doc.setLineWidth(0.4)
     const refH = 22
