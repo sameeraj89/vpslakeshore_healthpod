@@ -701,7 +701,8 @@ export async function generateScorecard(patientRaw, score, tier, domainScores, s
     addPageFooter(doc, W, H, pad)
   }
 
-  doc.save(`HealthPod_Scorecard_${patient.uhid || 'patient'}.pdf`)
+  const safeName = (patient.name || patient.uhid || 'Guest').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_')
+  doc.save(`HealthPod_Scorecard_${safeName}_${format(new Date(), 'ddMMMyyyy')}.pdf`)
 }
 
 // ── Shared page header for page 2+ ─────────────────────────────────────────
