@@ -38,8 +38,13 @@ export default function Kiosk() {
   const { saveRiskAssessment, updatePatient, showToast } = useApp()
   const { lang, setLang } = useT()
 
-  const [screen, setScreen] = useState('welcome')  // welcome | identify | hra
+  const [screen, setScreen] = useState('welcome')  // welcome | identify | guest | hra
   const [patient, setPatient] = useState(null)
+  const [guestName, setGuestName] = useState('')
+  const [guestAge, setGuestAge] = useState('')
+  const [guestGender, setGuestGender] = useState('')
+  const [guestPhone, setGuestPhone] = useState('')
+  const [guestError, setGuestError] = useState('')
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
@@ -73,6 +78,19 @@ export default function Kiosk() {
       pinBtn: 'Exit Kiosk',
       pinWrong: 'Incorrect PIN',
       cancel: 'Cancel',
+      guestTitle: 'Tell us a little about yourself',
+      guestSub: 'This helps personalise your report. Nothing is saved permanently.',
+      guestName: 'Full Name',
+      guestNamePh: 'e.g. Ravi Kumar',
+      guestAge: 'Age',
+      guestAgePh: 'e.g. 45',
+      guestGender: 'Gender',
+      guestPhone: 'Mobile Number (optional)',
+      guestPhonePh: 'e.g. 9876543210',
+      guestProceed: 'Start Health Check →',
+      guestSkip: 'Skip — proceed anonymously',
+      male: 'Male', female: 'Female', other: 'Other / Prefer not to say',
+      guestNameReq: 'Please enter your name to continue',
     },
     ml: {
       welcome: 'സ്വാഗതം', sub: 'നിങ്ങളുടെ ആരോഗ്യം. 10 മിനിറ്റിൽ.',
@@ -95,12 +113,25 @@ export default function Kiosk() {
       pinBtn: 'Exit Kiosk',
       pinWrong: 'PIN തെറ്റാണ്',
       cancel: 'റദ്ദാക്കുക',
+      guestTitle: 'നിങ്ങളെ കുറിച്ച് അല്‍പ്പം പറയൂ',
+      guestSub: 'ഇത് നിങ്ങളുടെ റിപ്പോര്‍ട്ട് വ്യക്തിഗതമാക്കാന്‍ സഹായിക്കുന്നു.',
+      guestName: 'പൂര്‍ണ്ണ നാമം',
+      guestNamePh: 'ഉദാ: രവി കുമാര്‍',
+      guestAge: 'പ്രായം',
+      guestAgePh: 'ഉദാ: 45',
+      guestGender: 'ലിംഗം',
+      guestPhone: 'മൊബൈല്‍ നമ്പര്‍ (ഐച്ഛികം)',
+      guestPhonePh: 'ഉദാ: 9876543210',
+      guestProceed: 'ആരോഗ്യ പരിശോധന ആരംഭിക്കുക',
+      guestSkip: 'ഒഴിവാക്കുക — അജ്ഞാതമായി തുടരുക',
+      male: 'പുരുഷന്‍', female: 'സ്ത്രീ', other: 'മറ്റ്',
+      guestNameReq: 'തുടരാന്‍ നിങ്ങളുടെ പേര്‍ നല്‍കുക',
     },
   }
   const tr = (key) => tx[lang][key] || tx.en[key]
 
-  // Idle reset — active on identify/hra screens
-  useIdleReset(() => resetToWelcome(), screen === 'identify' || screen === 'hra')
+  // Idle reset — active on identify/guest/hra screens
+  useIdleReset(() => resetToWelcome(), screen === 'identify' || screen === 'guest' || screen === 'hra')
 
   function resetToWelcome() {
     setScreen('welcome')
@@ -108,6 +139,20 @@ export default function Kiosk() {
     setQuery('')
     setSearchError('')
     setResultDone(false)
+    setGuestName(''); setGuestAge(''); setGuestGender(''); setGuestPhone(''); setGuestError('')
+  }
+
+  function handleGuestProceed(e) {
+    e?.preventDefault()
+    if (!guestName.trim()) { setGuestError(tr('guestNameReq')); return }
+    setPatient({
+      name: guestName.trim(),
+      age: guestAge ? parseInt(guestAge, 10) : null,
+      gender: guestGender || null,
+      phone: guestPhone.trim() || null,
+      uhid: 'GUEST',
+    })
+    setScreen('hra')
   }
 
   // Auto-reset after ScoreCard is shown
@@ -341,7 +386,7 @@ export default function Kiosk() {
           </div>
           <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
             <button
-              onClick={() => { setPatient(null); setScreen('hra') }}
+              onClick={() => setScreen('guest')}
               style={{
                 background: 'none', border: 'none', color: '#94a3b8',
                 fontSize: '0.85rem', cursor: 'pointer', padding: '0.625rem',
@@ -349,6 +394,134 @@ export default function Kiosk() {
               }}
             >
               {tr('skipBtn')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Guest Info Screen ───────────────────────────────────────────────────
+  if (screen === 'guest') {
+    const inputStyle = {
+      width: '100%', padding: '0.875rem 1rem',
+      border: '2px solid #e2e8f0', borderRadius: 10,
+      fontSize: '1.05rem', outline: 'none', boxSizing: 'border-box',
+      background: 'white', color: '#1e293b',
+    }
+    const labelStyle = {
+      display: 'block', fontWeight: 700, fontSize: '0.82rem',
+      color: '#475569', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.04em',
+    }
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: '#f0f4f8', padding: '2rem',
+      }}>
+        <div style={{ width: '100%', maxWidth: 500 }}>
+          <button onClick={() => setScreen('identify')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.95rem', cursor: 'pointer', marginBottom: '1rem', padding: '0.625rem 0', minHeight: 44, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+            {tr('back')}
+          </button>
+
+          <div style={{ background: 'white', borderRadius: 16, padding: '2.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #1B75BC, #A6215A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>👤</div>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{tr('guestTitle')}</h2>
+                <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>{tr('guestSub')}</p>
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: '#f1f5f9', margin: '1.25rem 0' }} />
+
+            <form onSubmit={handleGuestProceed} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Name */}
+              <div>
+                <label style={labelStyle}>{tr('guestName')} <span style={{ color: '#ef4444' }}>*</span></label>
+                <input
+                  type="text"
+                  placeholder={tr('guestNamePh')}
+                  value={guestName}
+                  onChange={e => { setGuestName(e.target.value); setGuestError('') }}
+                  autoFocus
+                  style={{ ...inputStyle, borderColor: guestError ? '#fca5a5' : '#e2e8f0' }}
+                />
+                {guestError && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: '0.375rem 0 0' }}>{guestError}</p>}
+              </div>
+
+              {/* Age + Gender row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={labelStyle}>{tr('guestAge')}</label>
+                  <input
+                    type="number"
+                    placeholder={tr('guestAgePh')}
+                    value={guestAge}
+                    onChange={e => setGuestAge(e.target.value)}
+                    min={1} max={120}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>{tr('guestGender')}</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                    {[['Male', tr('male')], ['Female', tr('female')], ['Other', tr('other')]].map(([val, label]) => (
+                      <label key={val} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.375rem 0.625rem', borderRadius: 8, border: `1.5px solid ${guestGender === val ? '#1B75BC' : '#e2e8f0'}`, background: guestGender === val ? '#eff6ff' : 'white', transition: 'all 0.1s' }}>
+                        <input
+                          type="radio" name="gender" value={val}
+                          checked={guestGender === val}
+                          onChange={() => setGuestGender(val)}
+                          style={{ accentColor: '#1B75BC' }}
+                        />
+                        <span style={{ fontSize: '0.88rem', fontWeight: guestGender === val ? 700 : 500, color: guestGender === val ? '#1B75BC' : '#475569' }}>{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label style={labelStyle}>{tr('guestPhone')}</label>
+                <input
+                  type="tel"
+                  placeholder={tr('guestPhonePh')}
+                  value={guestPhone}
+                  onChange={e => setGuestPhone(e.target.value)}
+                  maxLength={15}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={{ height: 1, background: '#f1f5f9' }} />
+
+              {/* Proceed button */}
+              <button
+                type="submit"
+                style={{
+                  width: '100%', padding: '1rem', fontSize: '1.1rem', fontWeight: 800,
+                  background: 'linear-gradient(90deg, #1B75BC, #145e9a)',
+                  color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer',
+                }}
+              >
+                {tr('guestProceed')}
+              </button>
+            </form>
+          </div>
+
+          {/* Anonymous skip */}
+          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+            <button
+              onClick={() => { setPatient(null); setScreen('hra') }}
+              style={{
+                background: 'none', border: 'none', color: '#94a3b8',
+                fontSize: '0.82rem', cursor: 'pointer', padding: '0.625rem',
+                minHeight: 44, textDecoration: 'underline', textDecorationStyle: 'dotted',
+              }}
+            >
+              {tr('guestSkip')}
             </button>
           </div>
         </div>
@@ -366,8 +539,15 @@ export default function Kiosk() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <img src="/logo.png" alt="VPS Lakeshore" style={{ height: 30 }} onClick={handleLogoTap} />
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>{patient?.name}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{patient?.uhid}</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  {patient?.name || (lang === 'ml' ? 'അതിഥി' : 'Guest')}
+                  {(!patient || patient.uhid === 'GUEST') && (
+                    <span style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#64748b', borderRadius: 4, padding: '0.1rem 0.4rem', fontWeight: 600, letterSpacing: '0.04em' }}>GUEST</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                  {patient?.uhid && patient.uhid !== 'GUEST' ? patient.uhid : [patient?.age ? `${patient.age} yrs` : null, patient?.gender].filter(Boolean).join(' · ') || ''}
+                </div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '0.375rem' }}>
